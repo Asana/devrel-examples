@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import asana, sys, os, json, logging, signal, threading
+import asana, sys, os, json, logging, signal, threading, hmac, hashlib
 from asana.error import AsanaError
 from dateutil import parser
 
@@ -23,7 +23,7 @@ Procedure for using this script to log live webhooks:
 * Run this script with these positional args:
   * First arg: ngrok subdomain
   * Second arg: ngrok port (e.g. 8090)
-* Visit localhost:8090/all_webhooks to see your hooks (which don't yet exist)
+* Visit localhost:8090/all_webhooks in your browser to see your hooks (which don't yet exist)
 and some useful links - like one to create a webhook
 * Make changes in Asana and see the logs from the returned webhooks.
 
@@ -123,18 +123,29 @@ def teardown():
         return ":( Not deleted. The webhook will die naturally in 7 days of failed delivery. :("
 
 
+hook_secret = None
 @app.route("/receive-webhook", methods=["POST"])
 def receive_webhook():
+    global hook_secret
     app.logger.info("Headers: \n" + str(request.headers));
     app.logger.info("Body: \n" + str(request.data));
     if "X-Hook-Secret" in request.headers:
         # Respond to the handshake request :)
         app.logger.info("New webhook")
         response = make_response("", 200)
+        # Save the secret for later to verify incoming webhooks
+        hook_secret = request.headers["X-Hook-Secret"]
         response.headers["X-Hook-Secret"] = request.headers["X-Hook-Secret"]
         return response
     elif "X-Hook-Signature" in request.headers:
-        # Never verify signature :/ Not ideal, but this is just a toy app.
+        # Compare the signature sent by Asana's API with one calculated locally.
+        # These should match since we now share the same secret as what Asana has stored.
+        signature = hmac.new(hook_secret.encode('ascii', 'ignore'),
+                msg=str(request.data), digestmod=hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(signature,
+                request.headers["X-Hook-Signature"].encode('ascii', 'ignore')):
+            app.logger.warn("Calculated digest does not digest from API. This event is not trusted.")
+            return
         contents = json.loads(request.data)
         app.logger.info("Received payload of %s events", len(contents["events"]))
         return ""
