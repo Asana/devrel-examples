@@ -122,7 +122,10 @@ def teardown():
                 print "Retries " + str(retries)
         return ":( Not deleted. The webhook will die naturally in 7 days of failed delivery. :("
 
-
+# Save a global variable for the secret from the handshake.
+# This is crude, and the secrets will vary _per webhook_ so we can't make
+# more than one webhook with this app, so your implementation should do
+# something smarter.
 hook_secret = None
 @app.route("/receive-webhook", methods=["POST"])
 def receive_webhook():
@@ -130,13 +133,16 @@ def receive_webhook():
     app.logger.info("Headers: \n" + str(request.headers));
     app.logger.info("Body: \n" + str(request.data));
     if "X-Hook-Secret" in request.headers:
-        # Respond to the handshake request :)
-        app.logger.info("New webhook")
-        response = make_response("", 200)
-        # Save the secret for later to verify incoming webhooks
-        hook_secret = request.headers["X-Hook-Secret"]
-        response.headers["X-Hook-Secret"] = request.headers["X-Hook-Secret"]
-        return response
+        if hook_secret is not None:
+            app.logger.warn("Second handshake request received. This could be an attacker trying to set up a new secret. Ignoring.")
+        else:
+            # Respond to the handshake request :)
+            app.logger.info("New webhook")
+            response = make_response("", 200)
+            # Save the secret for later to verify incoming webhooks
+            hook_secret = request.headers["X-Hook-Secret"]
+            response.headers["X-Hook-Secret"] = request.headers["X-Hook-Secret"]
+            return response
     elif "X-Hook-Signature" in request.headers:
         # Compare the signature sent by Asana's API with one calculated locally.
         # These should match since we now share the same secret as what Asana has stored.
