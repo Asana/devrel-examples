@@ -16,5 +16,5 @@ client = asana.Client.access_token(personal_access_token)
 
 me = client.users.me()
 
-print "Hello world! " + "My name is " + me['name'] + " and I my primary Asana workspace is " + me['workspaces'][0]['name'] + "."
+print "Hello world! " + "My name is " + me['name'] + " and my primary Asana workspace is " + me['workspaces'][0]['name'] + "."
 
