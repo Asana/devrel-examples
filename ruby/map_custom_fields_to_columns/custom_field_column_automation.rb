@@ -8,7 +8,7 @@ PERSONAL_ACCESS_TOKEN = ENV['ASANA_PAT']
 
 # Configuration:
 # Add the project-ids of the projects you want this script to act upon.
-project_ids = [180350018127066, 390187189911586]
+project_ids = [123456789, 567891234]
 
 unless PERSONAL_ACCESS_TOKEN
   abort "You must set a Personal Access Token to env var ASANA_PAT.\n"  \
