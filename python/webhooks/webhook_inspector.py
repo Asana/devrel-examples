@@ -72,7 +72,9 @@ ngrok_subdomain = sys.argv[1]
 # instance of this script can respond async.
 class CreateWebhookThread(threading.Thread):
     def run(self):
-        webhook = client.webhooks.create(resource=project, target="https://{0}.ngrok.io/receive-webhook".format(ngrok_subdomain))
+        # Note that if you want to attach arbitrary information (like the target project) to the webhook at creation time, you can have it
+        # pass in URL parameters to the callback function
+        webhook = client.webhooks.create(resource=project, target="https://{0}.ngrok.io/receive-webhook?project={1}".format(ngrok_subdomain, project))
 
 create_thread = CreateWebhookThread()
 
@@ -165,5 +167,5 @@ def signal_handler(signal, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-app.run(port=int(sys.argv[2]), debug=True)
+app.run(port=int(sys.argv[2]), debug=True, threaded=True)
 
