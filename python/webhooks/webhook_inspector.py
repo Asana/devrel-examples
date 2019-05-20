@@ -152,7 +152,7 @@ def receive_webhook():
                 msg=str(request.data), digestmod=hashlib.sha256).hexdigest()
         if not hmac.compare_digest(signature,
                 request.headers["X-Hook-Signature"].encode('ascii', 'ignore')):
-            app.logger.warn("Calculated digest does not digest from API. This event is not trusted.")
+            app.logger.warn("Calculated digest does not match digest from API. This event is not trusted.")
             return
         contents = json.loads(request.data)
         app.logger.info("Received payload of %s events", len(contents["events"]))
