@@ -2,7 +2,7 @@ const asana = require("asana");
 const config = require("./config");
 
 // Get personal access token (PAT) from environment variables.
-const accessToken = process.env.ASANA_PAT;
+const accessToken = process.env.triage_bot_pat;
 
 // At the time of writing this guide, the Asana API is going through 
 // two deprecations (moving to string ids and changing how sections function).
