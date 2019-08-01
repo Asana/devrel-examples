@@ -17,8 +17,8 @@ const client = asana.Client.create(deprecationHeaders).useAccessToken(accessToke
 
 
 // Request the unassigned tasks (up to 100) from the specified project
-// and pass the array of unassinged tasks to randomAissinger().
-function getUnassingedTasks() {
+// and pass the array of unassigned tasks to randomAissinger().
+function getUnassignedTasks() {
   let workspaceId = config.workspaceId;
   let params = {
     "projects.any" : config.designRequestProjectId,
@@ -44,26 +44,26 @@ function shuffleArray(array) {
   return array;
 }
 
-// Helper function to assigns a task in Asana
+// Helper function to assign a task in Asana
 function assignTask(taskStringId, assigneeStringId) {
   client.tasks.update(taskStringId, {assignee: assigneeStringId})
 }
 
-// Takes array of unassiged task gids and round-robin assigns them to 
+// Takes array of unassigned task gids and round-robin assigns them to 
 // a shuffled group of the Asana users specified in the config file.
-function randomAssigner(unassingedTasks) {
-  console.log("You've assigned " + toString(unassingedTasks.length) + 
+function randomAssigner(unassignedTasks) {
+  console.log("You've assigned " + toString(unassignedTasks.length) + 
     " new design requests")
   let shuffledDesigners = shuffleArray(config.designers);
   let numDesigners = shuffledDesigners.length;
-  for (let i = 0; i < unassingedTasks.length; i++) {
-    assignTask(unassingedTasks[i].gid, shuffledDesigners[i % numDesigners]);
+  for (let i = 0; i < unassignedTasks.length; i++) {
+    assignTask(unassignedTasks[i].gid, shuffledDesigners[i % numDesigners]);
   }  
 }
 
 
 // Run the triage bot:
-getUnassingedTasks();
+getUnassignedTasks();
 
 
 // TODO:
