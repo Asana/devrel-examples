@@ -36,7 +36,7 @@ function getUnassignedTasks() {
   });
 }
 
-// Helper function to randomly shuffle an array. We will use it to 
+// Helper function to randomly shuffle an array. We will use it to
 // randomize the list of Asana users fulfilling requests.
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -53,13 +53,13 @@ function assignTask(taskStringId, assigneeStringId) {
   client.tasks.update(taskStringId, {assignee: assigneeStringId});
 }
 
-// Takes an array of unassigned tasks and an array of designers 
-// and assigns a designer to each task. 
+// Takes an array of unassigned tasks and assigns a designer to
+// each task.
 function randomAssigner(unassignedTasks) {
   let shuffledDesigners = shuffleArray(config.designers);
   let numDesigners = shuffledDesigners.length;
-  // We will use an interval to control how quickly requests are sent 
-  // in order to avoid being rate limited. The interval uses the 
+  // We will use an interval to control how quickly requests are sent
+  // in order to avoid being rate limited. The interval uses the
   // const delay, which determines how long to wait between requests.
   let index = 0;
   let interval = setInterval(function() {
@@ -79,7 +79,7 @@ getUnassignedTasks();
 // Potential enhancements to add to the bot:
 //   -Find tasks that are nearly due and remind the assignee.
 //   -Ping over due tasks with a snarky message.
-//   -Use web hooks to keep the triage bot synced in real time. 
+//   -Use web hooks to keep the triage bot synced in real time.
 
 
 
