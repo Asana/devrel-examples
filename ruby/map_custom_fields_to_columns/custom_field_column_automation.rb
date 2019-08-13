@@ -22,26 +22,26 @@ end
 
 
 # Returns a hash of column/section ids and names for a given project
-# Note that this script works for both types of projects -- boards 
-# which have columns and lists which have sections. 
+# Note that this script works for both types of projects -- boards
+# which have columns and lists which have sections.
 def get_columns(project_id)
 	project_sections = @client.projects.find_by_id(project_id).sections
 	sections = Hash.new
 	project_sections.each do |section|
-		sections[section.id] = section.name
+		sections[section.gid] = section.name
 	end
 	sections
 end
 
-# For a specified project, returns an array of the tasks that have custom field values. 
+# For a specified project, returns an array of the tasks that have custom field values.
 def get_tasks_with_cf_values(project_id)
 	tasks_cf_values = []
 	tasks = @client.tasks.find_by_project({projectId: project_id, options: {expand: ["custom_fields"]}})
 	tasks.each do |task|
 		task.custom_fields.each do |cf|
 			if cf.fetch("enum_value")
-				cf_values = Hash.new  
-				cf_values["task-id"] = task.id
+				cf_values = Hash.new
+				cf_values["task-id"] = task.gid
 				cf_values["name"] = cf["enum_value"]["name"]
 				tasks_cf_values << cf_values
 			end
