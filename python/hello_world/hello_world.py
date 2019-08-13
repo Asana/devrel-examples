@@ -9,7 +9,7 @@ if 'ASANA_PAT' in os.environ:
     personal_access_token = os.environ['ASANA_PAT']
 else:
     print "No value for PAT in your console environment"
-    print "Try running this as `ASANA_PAT=0/1234567890abcdef... python hello_world.py`
+    print "Try running this as `ASANA_PAT=0/1234567890abcdef... python hello_world.py`"
     quit()
 
 client = asana.Client.access_token(personal_access_token)
