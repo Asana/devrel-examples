@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Asana Deprecation Alerts</title>
+
+    <script>
+        window.onload = function () {
+            let url = new URL(window.location.href);
+            let code = url.searchParams.get("code");
+            let state = url.searchParams.get("state");
+
+            let access_token = getCookie("access_token");
+
+            if (access_token) {
+                let authenticated = document.getElementById("authenticated-holder");
+                authenticated.style.display = "block";
+
+                let clear_auth_button = document.getElementById("clear-auth");
+
+                clear_auth_button.onclick = function () {
+                    deleteCookie("access_token");
+
+                    window.location.reload();
+                }
+            } else if (code) {
+                let loading = document.getElementById("loading-holder");
+                loading.style.display = "block";
+
+                let request = new Request('https://us-central1-developer-success.cloudfunctions.net/asana-deprecation-alerts-function/second-step-auth?code='+code+"&state="+state, {
+                    method: 'GET'
+                });
+
+                fetch(request)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            handleError(response.statusText);
+                            return;
+                        }
+
+                        console.log("We should be logged in.");
+
+                        // Reload the page without the query params
+                        window.location = window.location.href.split("?")[0];
+                    })
+            } else {
+                let unauthenticated = document.getElementById("unauthenticated-holder");
+                unauthenticated.style.display = "block";
+
+                let auth_button = document.getElementById("auth-with-asana-button");
+                auth_button.onclick = function () {
+                    var request = new Request('https://us-central1-developer-success.cloudfunctions.net/asana-deprecation-alerts-function/first-step-auth', {
+                        method: 'GET'
+                    });
+
+                    fetch(request)
+                        .then(function (response) {
+                            if (!response.ok) {
+                                handleError(response.statusText);
+                                return;
+                            }
+
+                            response.json().then(function(data) {
+                                document.cookie = "state=" + data.state + ";expires=3600;path=/";
+
+                                window.location.href = "https://app.asana.com/-/oauth_authorize" +
+                                    "?client_id=" + data.clientId +
+                                    "&code_challenge=" + data.codeChallenge +
+                                    "&challenge_method=" + data.challengeMethod +
+                                    "&redirect_uri=" + data.redirectUri +
+                                    "&response_type=" + "code" +
+                                    "&state=" + getCookie("state") +
+                                    "&display_ui=always";
+                            });
+                        });
+                }
+            }
+
+            function getCookie(name) {
+                var value = "; " + document.cookie;
+                var parts = value.split("; " + name + "=");
+                if (parts.length === 2) return parts.pop().split(";").shift();
+            }
+
+            function deleteCookie(name) {
+                document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            }
+
+            function handleError(error_message) {
+                var error = document.getElementById("error-holder");
+                var errorText = document.getElementById("error-text");
+
+                error.style.display = "block";
+                errorText.innerText = error_message;
+            }
+        }
+    </script>
+
+    <style>
+        .lds-dual-ring {
+            display: inline-block;
+            width: 64px;
+            height: 64px;
+        }
+        .lds-dual-ring:after {
+            content: " ";
+            display: block;
+            width: 46px;
+            height: 46px;
+            margin: 1px;
+            border-radius: 50%;
+            border: 5px solid;
+            border-color: #000 transparent #000 transparent;
+            animation: lds-dual-ring 1.2s linear infinite;
+        }
+        @keyframes lds-dual-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="unauthenticated-holder" style="display: none;">
+        <button id="auth-with-asana-button">Authenticate with Asana</button>
+    </div>
+    <div id="loading-holder" style="display: none">
+        <div class="lds-dual-ring"></div>
+    </div>
+    <div id="authenticated-holder" style="display: none;">
+        <p>Congrats! You're authenticated!</p>
+        <button id="clear-auth">Clear Auth Cookie</button>
+    </div>
+    <div id="error-holder" style="display: none;">
+        <p id="error-text">Something failed!</p>
+    </div>
+</body>
+</html>
