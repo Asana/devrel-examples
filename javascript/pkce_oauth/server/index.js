@@ -4,7 +4,7 @@ const sha256 = require('js-sha256');
 const request = require('request');
 const functions = require('firebase-functions');
 
-const challengeMethod = "SHA256";
+const challengeMethod = "S256";
 const authorizationGrantType = "authorization_code";
 const refreshGrantType = "refresh_token";
 
@@ -47,7 +47,6 @@ app.get('/first-step-auth', (req, res) => {
     result.challengeMethod = challengeMethod;
     result.clientId = clientId;
     result.redirectUri = redirectUri;
-    result.state = state;
 
     // Store state as a cookie on the client
     res.cookie("state", state);

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Asana Deprecation Alerts</title>
+    <title>Asana OAuth</title>
 
     <script>
         window.onload = function () {
@@ -27,7 +27,7 @@
                 let loading = document.getElementById("loading-holder");
                 loading.style.display = "block";
 
-                let request = new Request('https://us-central1-developer-success.cloudfunctions.net/asana-deprecation-alerts-function/second-step-auth?code='+code+"&state="+state, {
+                let request = new Request('https://us-central1-my-app.cloudfunctions.net/my-app-function/second-step-auth?code='+code+"&state="+state, {
                     method: 'GET'
                 });
 
@@ -49,7 +49,7 @@
 
                 let auth_button = document.getElementById("auth-with-asana-button");
                 auth_button.onclick = function () {
-                    var request = new Request('https://us-central1-developer-success.cloudfunctions.net/asana-deprecation-alerts-function/first-step-auth', {
+                    var request = new Request('https://us-central1-my-app.cloudfunctions.net/my-app-function/first-step-auth', {
                         method: 'GET'
                     });
 
