@@ -285,7 +285,7 @@ app.use(cookieParser());
 
 Next, we're going to tell Asana we're ready for a token. We will send this json body to the `tokenExchangeEndpoint`.
 
-```json
+```
 {
   grant_type: authorizationGrantType, // What type of authorization we're performing
   client_id: clientId,                // Who we are
