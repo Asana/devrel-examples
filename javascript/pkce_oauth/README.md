@@ -1,8 +1,10 @@
+# OAuth Server Example
+
 This example shows how to get started with the confidential client authorization code flow. For this tutorial, we will 
 utilize the (Always Free)[https://cloud.google.com/free/] offerings of Google Cloud, but you can alter this to use any
 server you prefer.
 
-This is useful for apps that don't need/want a server, but need to allow secure logins.
+This is useful for apps to get started with a simple and free server.
 
 ### Basics
 
@@ -27,22 +29,21 @@ Here is a simplified rundown of the steps we will complete:
 10. Asana returns an access_token
 11. Your app server gives the user the access_token
 
-Sounds easy, right?
-
-Lets start with a server. 
-
-For this example we're going to use google cloud functions. Why? Because they're an easy way to satisfy the server requirement without much overhead. And until you get too much traffic, they're free!
+Sounds easy, right? Lets start with a server. 
 
 ## The Server
 
+For this example we're going to use google cloud functions. Why? Because they're an easy way to satisfy the server 
+requirement without much overhead. And until you get too much traffic, they're free!
+
 1. Login to the [Google Cloud Console](https://console.cloud.google.com/).
 2. Create a [Cloud Function](https://cloud.google.com/functions/docs/quickstart-console)
-  1. 256 MB memory allocated.
-  2. Trigger should be HTTP
-  3. Inline Editor
-  4. Node.js 8
+    1. 256 MB memory allocated.
+    2. Trigger should be HTTP
+    3. Inline Editor
+    4. Node.js 8
 3. Create a basic app.
-  1. For index.js, put in this:
+    1. For index.js, put in this:
 ```javascript
 const express = require('express');
 const functions = require('firebase-functions');
@@ -79,11 +80,10 @@ exports.app = functions.https.onRequest(app);
   }
 }
 ```
-4. Hit Deploy.
-5. Go to the URL under the Trigger tab, and click on it!
+
+Hit Deploy, go to the URL under the Trigger tab, and click on it!
 
 Lets talk about what our code is doing. We require some packages, create our express app, and then handled the '/' path. 
-
 We needed to require firebase-functions (and -admin) to enable Google Functions to correctly handle an express app.
 
 ### Expand our app server's endpoints
@@ -156,7 +156,8 @@ Here's what all of these variables mean:
 * `clientId` is the client_id our app. This lets Asana know which app we are.
 * `redirectUri` is the redirectUri we whitelisted on our app in Asana.
 
-In order for our `getRandomToken()` function to work, we should declare it. Create a function below (outside of any `app.get`) and paste in:
+In order for our `getRandomToken()` function to work, we should declare it. Here's a couple of very simple functions 
+that get the job done. You should upgrade this or use a package that won't repeat (even though it is very unlikely).
 ```javascript
 // Generates a random string
 function getRandomToken() {
@@ -175,7 +176,8 @@ function getRandomSmallToken() {
 }
 ```
 
-In order for our `sha256` function to work, we need to import the library. Run `npm install js-sha256` and at the top of the function, add:
+In order for our `sha256` function to work, we need to import the library. Run `npm install js-sha256` and at the top of 
+the function, add:
 ```javascript
 const sha256 = require('js-sha256');
 ```
@@ -188,7 +190,8 @@ const clientId = process.env.client_id;
 const redirectUri = process.env.redirect_uri;
 ```
 
-`process.env.~` lets us declare these variables in our environment instead of in code. In Google Cloud, while editing your function, you can hit "Advanced Features" and set these variables. We do this later.
+`process.env.~` lets us declare these variables in our environment instead of in code. In Google Cloud, while editing 
+your function, you can hit "Advanced Features" and set these variables. We do this later.
 
 #### 1 step done, 1 step to go.
 So right now we have an endpoint that our webpage will hit. This endpoint will give the webpage the info it needs to 
