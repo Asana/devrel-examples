@@ -33,7 +33,7 @@ Sounds easy, right? Lets start with a server.
 
 ## The Server
 
-For this example we're going to use google cloud functions. Why? Because they're an easy way to satisfy the server 
+For this example we're going to use google cloud functions. GCF are an easy way to satisfy the server 
 requirement without much overhead. And until you get too much traffic, they're free!
 
 1. Login to the [Google Cloud Console](https://console.cloud.google.com/).
