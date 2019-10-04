@@ -7,6 +7,7 @@
     <script>
         window.onload = function () {
             let url = new URL(window.location.href);
+            let pathUrl = [location.protocol, '//', location.host, location.pathname].join('');
             let code = url.searchParams.get("code");
             let state = url.searchParams.get("state");
 
@@ -27,7 +28,7 @@
                 let loading = document.getElementById("loading-holder");
                 loading.style.display = "block";
 
-                let request = new Request('https://us-central1-my-app.cloudfunctions.net/my-app-function/second-step-auth?code='+code+"&state="+state, {
+                let request = new Request(pathUrl + '/second-step-auth?code='+code+"&state="+state, {
                     method: 'GET'
                 });
 
@@ -49,7 +50,7 @@
 
                 let auth_button = document.getElementById("auth-with-asana-button");
                 auth_button.onclick = function () {
-                    var request = new Request('https://us-central1-my-app.cloudfunctions.net/my-app-function/first-step-auth', {
+                    var request = new Request(pathUrl + '/first-step-auth', {
                         method: 'GET'
                     });
 
@@ -61,15 +62,13 @@
                             }
 
                             response.json().then(function(data) {
-                                document.cookie = "state=" + data.state + ";expires=3600;path=/";
-
                                 window.location.href = "https://app.asana.com/-/oauth_authorize" +
                                     "?client_id=" + data.clientId +
                                     "&code_challenge=" + data.codeChallenge +
-                                    "&challenge_method=" + data.challengeMethod +
+                                    "&code_challenge_method=" + data.challengeMethod +
                                     "&redirect_uri=" + data.redirectUri +
                                     "&response_type=" + "code" +
-                                    "&state=" + getCookie("state") +
+                                    "&state=" + data.state +
                                     "&display_ui=always";
                             });
                         });

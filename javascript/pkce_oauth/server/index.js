@@ -1,6 +1,7 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
-const sha256 = require('js-sha256');
+const crypto = require('crypto');
+const base64url = require('base64-url');
 const request = require('request');
 const functions = require('firebase-functions');
 
@@ -18,6 +19,7 @@ const stateCache = {};
 const tokenCache = {};
 
 const app = express();
+
 app.use(cookieParser());
 
 // Base endpoint. This should return our html.
@@ -33,23 +35,39 @@ app.get('/', (req, res) => {
 app.get('/first-step-auth', (req, res) => {
     console.log('In first-step-auth');
 
-    let result = {};
+    const state = getRandomString();
+    const codeVerifier = getRandomString();
 
-    let state = getRandomToken();
-    let codeVerifier = getRandomToken();
-    let codeChallenge = sha256(codeVerifier);
+    // We use crypto to generate sha256 bytes, and we encode them with base64
+    let codeChallenge = crypto.createHash('sha256')
+        .update(codeVerifier)
+        .digest('base64');
+
+    // Because the client will be sending it in the url, lets url encode it for them
+    codeChallenge = base64url.escape(codeChallenge);
 
     // Save that the state and codeVerifier were given to the same person
     stateCache[state] = codeVerifier;
 
-    // Supply the client with the OAuth data
-    result.codeChallenge = codeChallenge;
-    result.challengeMethod = challengeMethod;
-    result.clientId = clientId;
-    result.redirectUri = redirectUri;
+    console.log(codeVerifier);
+    console.log(codeChallenge);
+
+    // Create the result to send to the client
+    const result = {
+        codeChallenge: encodeURI(codeChallenge),
+        challengeMethod: challengeMethod,
+        clientId: clientId,
+        redirectUri: redirectUri,
+        state: state
+    };
 
     // Store state as a cookie on the client
-    res.cookie("state", state);
+    res.cookie('state', state, {
+        maxAge: 15 * 60000,             // cookie will be removed after 15 min
+        httpOnly: true,                 // cookie cannot be read by browser javascript
+        secure: true,                   // cookie can only be used with HTTPS
+        path: process.env.redirect_uri  // cookie can only be used with our uri
+    });
 
     res.json(result);
 });
@@ -61,10 +79,12 @@ app.get('/first-step-auth', (req, res) => {
 app.get('/second-step-auth', (req, res) => {
     console.log('In second-step-auth');
 
-    let state = req.query.state;
+    const state = req.cookies.state;
 
-    // Confirm the given state matches the state in the user's cookies
-    if (state !== req.cookies.state) {
+    // This check is used to prevent XSS attacks. If you have implemented PKCE correctly
+    // you do not need to do this check, as Asana will protect the user during the token
+    // exchange with the codeVerifier.
+    if (req.query.state !== state) {
         res.status(401);
         res.send();
         return;
@@ -73,8 +93,8 @@ app.get('/second-step-auth', (req, res) => {
     // The user doesn't need this state anymore
     res.clearCookie("state");
 
-    let code = req.query.code;
-    let codeVerifier = stateCache[state];
+    const code = req.query.code;
+    const codeVerifier = stateCache[state];
 
     const requestBody = {
         grant_type: authorizationGrantType,
@@ -89,7 +109,7 @@ app.get('/second-step-auth', (req, res) => {
     request.post(tokenExchangeEndpoint, {
         form: requestBody
     }, (error, responseObj, responseBody) => {
-        console.log('In response from asana');
+        console.log('In response from Asana');
 
         if (error) {
             console.error(error);
@@ -97,6 +117,9 @@ app.get('/second-step-auth', (req, res) => {
             res.send();
             return;
         }
+
+        console.log(codeVerifier);
+        console.log(responseObj);
 
         handleNewToken(JSON.parse(responseBody), res);
     });
@@ -106,11 +129,10 @@ app.get('/second-step-auth', (req, res) => {
 app.get('/refresh-token', (req, res) => {
     console.log('In refresh-token');
 
-    let access_token = req.cookies.access_token;
-    let refreshTokenObj = tokenCache[access_token];
+    const access_token = req.cookies.access_token;
+    const refreshTokenObj = tokenCache[access_token];
 
-    // If this token is not expired, refresh it
-    if (refreshTokenObj != null && Date.now() - refreshTokenObj.createdAt < refreshTokenObj.expiresIn) {
+    if (refreshTokenObj !== null) {
         const requestBody = {
             grant_type: refreshGrantType,
             client_id: clientId,
@@ -124,6 +146,8 @@ app.get('/refresh-token', (req, res) => {
         }, (error, responseObj, responseBody) => {
             if (error) {
                 console.error(error);
+                res.status(401);
+                res.send();
                 return;
             }
 
@@ -137,10 +161,12 @@ app.get('/refresh-token', (req, res) => {
 
 // Handles a response from the auth server.
 function handleNewToken(body, res) {
-    let accessToken = body.access_token;
-    let expiresIn = body.expires_in;
-    let refreshToken = body.refresh_token;
-    let userData = body.data;
+    console.log(body);
+
+    const accessToken = body.access_token;
+    const expiresIn = body.expires_in;
+    const refreshToken = body.refresh_token;
+    const userData = body.data;
 
     console.log("Storing access & refresh token for " + userData.name + " (" + userData.gid + ")");
 
@@ -155,20 +181,10 @@ function handleNewToken(body, res) {
     res.redirect(redirectUri);
 }
 
-// Generates a random string of a bigger size
-function getRandomToken() {
-    return getRandomSmallToken() + getRandomSmallToken();
-}
-
-// Generates a random string
-function getRandomSmallToken() {
-    let randomNumber = Math.random();
-
-    while (randomNumber === 0) {
-        randomNumber = Math.random();
-    }
-
-    return randomNumber.toString(36).substr(2);
+// Generates a cryptographically random string
+function getRandomString() {
+    const randomBytesBuffer = crypto.randomBytes(64);
+    return randomBytesBuffer.toString('hex');
 }
 
 exports.app = functions.https.onRequest(app);

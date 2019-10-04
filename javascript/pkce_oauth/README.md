@@ -48,9 +48,9 @@ requirement without much overhead. And until you get too much traffic, they're f
 const express = require('express');
 const functions = require('firebase-functions');
 
-const app = express();
-
 const stateCache = {};
+
+const app = express();
 
 // Base endpoint. This should return our html.
 app.get('/', (req, res) => {
@@ -61,30 +61,38 @@ app.get('/', (req, res) => {
 
 exports.app = functions.https.onRequest(app);
 ```
-  2. For package.json, put in this: 
+  2. For package.json, put in all this: 
 ```json
 {
-  "name": "example-app",
+  "name": "my-app",
   "version": "0.0.1",
-  "description": "This is an example google function app",
+  "description": "Simple app server to allow users to perform OAuth.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Your Name",
+  "keywords": [
+    "asana",
+    "oauth"
+  ],
+  "author": "My Name",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
-    "firebase-admin": "^8.3.0",
-    "firebase-functions": "^3.2.0"
-  }
+      "base64-url": "^2.3.2",
+      "cookie-parser": "^1.4.4",
+      "crypto": "^1.0.1",
+      "express": "^4.17.1",
+      "firebase-admin": "^8.3.0",
+      "firebase-functions": "^3.2.0",
+      "request": "^2.88.0"
+    }
 }
 ```
 
 Hit Deploy, go to the URL under the Trigger tab, and click on it!
 
-Lets talk about what our code is doing. We require some packages, create our express app, and then handled the '/' path. 
-We needed to require firebase-functions (and -admin) to enable Google Functions to correctly handle an express app.
+Lets talk about what our code is doing. We require some packages, create an express app, and then handle the '/' path. 
+We needed to require firebase-functions to enable Google Functions to correctly handle an express app.
 
 ### Expand our app server's endpoints
 
@@ -122,24 +130,39 @@ Now throw all this code into your '/first-step-auth' endpoint, and lets talk abo
 app.get('/first-step-auth', (req, res) => {
     console.log('In first-step-auth');
     
-    let result = {};
+    const state = getRandomString();
+    const codeVerifier = getRandomString();
 
-    let state = getRandomToken();
-    let codeVerifier = getRandomToken();
-    let codeChallenge = sha256(codeVerifier);
+    // We use crypto to generate sha256 bytes from the codeVerifier, and then digest the bytes with base64
+    let codeChallenge = crypto.createHash('sha256')
+        .update(codeVerifier)
+        .digest('base64');
+
+    // Because the client will be sending the challenge in the url, lets url encode it for them
+    codeChallenge = base64url.escape(codeChallenge);
 
     // Save that the state and codeVerifier were given to the same person
     stateCache[state] = codeVerifier;
 
-    // Supply the client with the OAuth data
-    result.codeChallenge = codeChallenge;
-    result.challengeMethod = challengeMethod;
-    result.clientId = clientId;
-    result.redirectUri = redirectUri;
-    result.state = state;
+    console.log(codeVerifier);
+    console.log(codeChallenge);
+
+    // Create the result to send to the client
+    const result = {
+        codeChallenge: encodeURI(codeChallenge),
+        challengeMethod: challengeMethod,
+        clientId: clientId,
+        redirectUri: redirectUri,
+        state: state
+    };
 
     // Store state as a cookie on the client
-    res.cookie("state", state);
+    res.cookie('state', state, {
+        maxAge: 15 * 60000,             // cookie will be removed after 15 min
+        httpOnly: true,                 // cookie cannot be read by browser javascript
+        secure: true,                   // cookie can only be used with HTTPS
+        path: process.env.redirect_uri  // cookie can only be used with our uri
+    });
 
     res.json(result);
 });
@@ -151,7 +174,7 @@ Here's what all of these variables mean:
   * You might not need `state` if you require users to login to your app before performing oauth, because their login can be used to prove the person's identity.
 * `stateCache` is going to be the only storage we use for this app. This is wiped when the server restarts, so we need to keep that in mind. (If you have a database set up, you can/should use that in place of this)
 * `codeVerifier` is a random token. We will not show the user this token, as it's going to prove to Asana that we are the same App during some other steps.
-* `codeChallenge` is a sha256 encryption of our codeVerifier (a one-way encryption). This way, we can expose it to the user, but they can't find out our `codeVerifier`.
+* `codeChallenge` is a sha256 encryption and base64 representation of our codeVerifier (a one-way encryption). This way, we can expose it to the user, but they can't find out our `codeVerifier`.
 * `challengeMethod` will be set to "S256" to describe how we hashed our challenge.
 * `clientId` is the client_id our app. This lets Asana know which app we are.
 * `redirectUri` is the redirectUri we whitelisted on our app in Asana.
@@ -159,27 +182,18 @@ Here's what all of these variables mean:
 In order for our `getRandomToken()` function to work, we should declare it. Here's a couple of very simple functions 
 that get the job done. You should upgrade this or use a package that won't repeat (even though it is very unlikely).
 ```javascript
-// Generates a random string
-function getRandomToken() {
-    return getRandomSmallToken() + getRandomSmallToken();
-}
-
-// Generates a small random string
-function getRandomSmallToken() {
-    let randomNumber = Math.random();
-
-    while (randomNumber === 0) {
-        randomNumber = Math.random();
-    }
-
-    return randomNumber.toString(36).substr(2);
+// Generates a cryptographically random string
+function getRandomString() {
+    const randomBytesBuffer = crypto.randomBytes(64);
+    return randomBytesBuffer.toString('hex');
 }
 ```
 
-In order for our `sha256` function to work, we need to import the library. Run `npm install js-sha256` and at the top of 
-the function, add:
+In order for our `getRandomString` function and `sha256` hashing to work, we need to import the crypto library. Run `npm install crypto` and `npm install base64-url`. At the top of 
+our script, add:
 ```javascript
-const sha256 = require('js-sha256');
+const crypto = require('crypto');
+const base64url = require('base64-url');
 ```
 
 While we're here, lets add some other constants:
@@ -206,13 +220,15 @@ location.
 ### Expand the Second Auth Step.
 Now throw all this code into your '/second-step-auth' endpoint, and lets talk about it:
 ```javascript
-app.get('/first-step-auth', (req, res) => {
+app.get('/second-step-auth', (req, res) => {
     console.log('In second-step-auth');
     
-    let state = req.query.state;
+    const state = req.cookies.state;
 
-    // Confirm the given state matches the state in the user's cookies
-    if (state !== req.cookies.state) {
+    // This check is used to prevent XSS attacks. If you have implemented PKCE correctly
+    // you do not need to do this check, as Asana will protect the user during the token
+    // exchange with the codeVerifier.
+    if (req.query.state !== state) {
         res.status(401);
         res.send();
         return;
@@ -221,8 +237,8 @@ app.get('/first-step-auth', (req, res) => {
     // The user doesn't need this state anymore
     res.clearCookie("state");
 
-    let code = req.query.code;
-    let codeVerifier = stateCache[state];
+    const code = req.query.code;
+    const codeVerifier = stateCache[state];
 
     const requestBody = {
         grant_type: authorizationGrantType,
@@ -237,7 +253,7 @@ app.get('/first-step-auth', (req, res) => {
     request.post(tokenExchangeEndpoint, {
         form: requestBody
     }, (error, responseObj, responseBody) => {
-        console.log('In response from asana');
+        console.log('In response from Asana');
 
         if (error) {
             console.error(error);
@@ -245,6 +261,9 @@ app.get('/first-step-auth', (req, res) => {
             res.send();
             return;
         }
+
+        console.log(codeVerifier);
+        console.log(responseObj);
 
         handleNewToken(JSON.parse(responseBody), res);
     });
@@ -263,14 +282,14 @@ now. This proves to us that the webpage who hit our `/first-step-auth` endpoint 
 [CSRF Attacks](https://auth0.com/docs/protocols/oauth2/mitigate-csrf-attacks).
 
 We'll need to do some installs and imports. Run `npm install cookie-parser` to allow express to read cookies, and run 
-`npm install request` for an easy-to-use package for sending requests.
+`npm install request` for an easy-to-use package for sending requests. Add these two lines at the top:
 
 ```javascript
 const cookieParser = require('cookie-parser');
 const request = require('request');
 ```
 
-We'll also need to set some more constants at the top:
+We'll also need some more constants:
 
 ```javascript
 const clientSecret = process.env.client_secret;
@@ -283,6 +302,7 @@ And tell our express app to use the cookie parser:
 
 ```javascript
 const app = express();   // <--- You should already have this line
+
 app.use(cookieParser());
 ```
 
@@ -299,7 +319,7 @@ Next, we're going to tell Asana we're ready for a token. We will send this json 
 }
 ```
 
-Finally, we handle the response from Asana! Add this function below all of your `app.get`.
+Finally, we handle the response from Asana! Add this function next to the `getRandomString` function:
 
 ```javascript
 // Handles a response from the auth server.
@@ -397,7 +417,7 @@ In the body, lets put in some divs. Each div will represent a different state th
 </body>
 ```
 
-Let's add some basic style to our loading icon. A gif loading icon is the heart of any quality app:
+Let's add some basic style to our loading icon. An animated loading icon is the heart of any quality app:
 
 ```html
     ...
@@ -465,11 +485,12 @@ Finally, lets add a script tag that will do all of the work. Lets add some helpe
 * handleError(error_message) is a function that will display an error to the user. This simply shows the 'error' div and
   sets the text in it.
   
-First, lets grab all of the data that might be relevant:
+Inside our window.onload, lets first grab all of the data that might be relevant:
 
 ```javascript
 window.onload = function() {
     let url = new URL(window.location.href);
+    let pathUrl = [location.protocol, '//', location.host, location.pathname].join('');
     let code = url.searchParams.get("code");
     let state = url.searchParams.get("state");
 
@@ -521,23 +542,23 @@ supplied a `code`.
 } else if (code) {
   let loading = document.getElementById("loading-holder");
   loading.style.display = "block";
-    
-  let request = new Request('https://us-central1-my-app.cloudfunctions.net/my-app-function/second-step-auth?code='+code+"&state="+state, {
-    method: 'GET'
+
+  let request = new Request(pathUrl + '/second-step-auth?code='+code+"&state="+state, {
+      method: 'GET'
   });
-    
+
   fetch(request)
-    .then(function (response) {
-       if (!response.ok) {
-         handleError(response.statusText);
-         return;
-       }
-    
-       console.log("We should be logged in.");
-    
-       // Reload the page without the query params
-       window.location = window.location.href.split("?")[0];
-    })
+      .then(function (response) {
+          if (!response.ok) {
+              handleError(response.statusText);
+              return;
+          }
+
+          console.log("We should be logged in.");
+
+          // Reload the page without the query params
+          window.location = window.location.href.split("?")[0];
+      })
 }
 
 function getCookie(name) { 
@@ -561,31 +582,29 @@ The last thing we need to handle is when an unauthenticated user comes to the we
 
   let auth_button = document.getElementById("auth-with-asana-button");
   auth_button.onclick = function () {
-    var request = new Request('https://us-central1-my-app.cloudfunctions.net/my-app-function/first-step-auth', {
-      method: 'GET'
-    });
+      var request = new Request(pathUrl + '/first-step-auth', {
+          method: 'GET'
+      });
 
-    fetch(request)
-      .then(function (response) {
-        if (!response.ok) {
-          handleError(response.statusText);
-          return;
-        }
+      fetch(request)
+          .then(function (response) {
+              if (!response.ok) {
+                  handleError(response.statusText);
+                  return;
+              }
 
-        response.json().then(function(data) {
-            document.cookie = "state=" + data.state + ";expires=3600;path=/";
-
-            window.location.href = "https://app.asana.com/-/oauth_authorize" +
-              "?client_id=" + data.clientId +
-              "&code_challenge=" + data.codeChallenge +
-              "&challenge_method=" + data.challengeMethod +
-              "&redirect_uri=" + data.redirectUri +
-              "&response_type=" + "code" +
-              "&state=" + getCookie("state") +
-              "&display_ui=always"; // Only include this if you want to see the Asana "Allow" screen every time you auth.
-            });
-        });
-    }
+              response.json().then(function(data) {
+                  window.location.href = "https://app.asana.com/-/oauth_authorize" +
+                      "?client_id=" + data.clientId +
+                      "&code_challenge=" + data.codeChallenge +
+                      "&code_challenge_method=" + data.challengeMethod +
+                      "&redirect_uri=" + data.redirectUri +
+                      "&response_type=" + "code" +
+                      "&state=" + data.state +
+                      "&display_ui=always";
+              });
+          });
+  }
 }
 
 function getCookie(name) { 
