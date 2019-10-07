@@ -138,8 +138,8 @@ app.get('/first-step-auth', (req, res) => {
         .update(codeVerifier)
         .digest('base64');
 
-    // PKCE expects a base64url string. Let's convert our base64 string to one. Note that this is different than URL 
-    // encoding a base64 string.
+    // PKCE expects a base 64 URL string. The crypto library does not support base 64 URL encoding, so we must convert 
+    // the result to be compliant.
     codeChallenge = base64url.escape(codeChallenge);
 
     // Save that the state and codeVerifier were given to the same person
