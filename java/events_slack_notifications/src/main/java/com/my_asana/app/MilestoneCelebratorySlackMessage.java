@@ -53,8 +53,6 @@ public class MilestoneCelebratorySlackMessage {
 
         ResultBodyCollection<Event> eventResponse = null;
 
-
-
         try {
             eventResponse = client.events.get(projectId, sync).executeRaw();
         } catch(InvalidTokenError e) {
