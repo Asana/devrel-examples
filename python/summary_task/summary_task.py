@@ -109,11 +109,11 @@ def main():
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('summary_project_id',
-        help='project id of project to post summary task to',
-        )
+        help='project id of project to post summary task to')
     parser.add_argument('projects',
-        help='project id of project to summarize', nargs='+', metavar='project_id'
-        )
+        help='project id of project to summarize', 
+        nargs='+',
+        metavar='project_id')
     args = parser.parse_args()
 
     # Authorize the client
@@ -180,7 +180,7 @@ def make_description(data):
                 description += "{}: <b>{}</b>\n".format(key, value)
 
     # Add footer
-    description += "\n\n<em>Made by the example-summary-task script.</em>"
+    description += "\n\n<em>Made by the summary_task script.</em>"
 
     description += "</body>"
 
@@ -275,10 +275,9 @@ def update_data(data, task):
                 cf_data[cf['enum_value']['name']] += 1
             else:
                 cf_data[None] += 1
-        elif cf['resource_subtype'] =='number':
+        elif cf['resource_subtype'] == 'number':
             if cf['number_value']:
                 num = float(cf['number_value'])
-                total = cf_data['total']
                 count = cf_data['count']
                 average = cf_data['average']
                 cf_data['average'] = (average * count + num) / (count + 1)
