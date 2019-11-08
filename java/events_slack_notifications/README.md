@@ -10,9 +10,9 @@ This project uses [Maven](http://maven.apache.org/) to manage its dependencies. 
 Asana
 
     <dependency>
-         <groupId>com.asana</groupId>
-         <artifactId>asana</artifactId>
-         <version>0.9.0</version>
+      <groupId>com.asana</groupId>
+      <artifactId>asana</artifactId>
+      <version>0.9.0</version>
     </dependency>
 
 Slack
