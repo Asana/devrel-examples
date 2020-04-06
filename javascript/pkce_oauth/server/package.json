@@ -1,0 +1,24 @@
+{
+  "name": "asana-app-server-boilerplate",
+  "version": "0.0.1",
+  "description": "Simple app server to allow users to perform OAuth.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "asana",
+    "oauth"
+  ],
+  "author": "Ross Grambo",
+  "license": "ISC",
+  "dependencies": {
+    "base64-url": "^2.3.2",
+    "cookie-parser": "^1.4.4",
+    "crypto": "^1.0.1",
+    "express": "^4.17.1",
+    "firebase-admin": "^8.3.0",
+    "firebase-functions": "^3.2.0",
+    "request": "^2.88.0"
+  }
+}
