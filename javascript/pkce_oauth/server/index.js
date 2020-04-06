@@ -125,14 +125,15 @@ app.get('/second-step-auth', (req, res) => {
     });
 });
 
-// This allows the front end app to request a new token if their current token is not expired
+// This allows the front end app to request a new token if their current token is not expired.
+// This is an oversimplified version of how refresh-token handling should work.
 app.get('/refresh-token', (req, res) => {
     console.log('In refresh-token');
 
     const access_token = req.cookies.access_token;
     const refreshTokenObj = tokenCache[access_token];
 
-    if (refreshTokenObj !== null) {
+    if (refreshTokenObj !== null && Date.now() < (refreshTokenObj.createdAt + refreshTokenObj.expiresIn)) {
         const requestBody = {
             grant_type: refreshGrantType,
             client_id: clientId,
@@ -171,6 +172,7 @@ function handleNewToken(body, res) {
     console.log("Storing access & refresh token for " + userData.name + " (" + userData.gid + ")");
 
     res.cookie("access_token", accessToken);
+
 
     tokenCache[accessToken] = {
         createdAt: Date.now(),
