@@ -145,9 +145,6 @@ app.get('/first-step-auth', (req, res) => {
     // Save that the state and codeVerifier were given to the same person
     stateCache[state] = codeVerifier;
 
-    console.log(codeVerifier);
-    console.log(codeChallenge);
-
     // Create the result to send to the client
     const result = {
         codeChallenge: encodeURI(codeChallenge),
@@ -159,7 +156,7 @@ app.get('/first-step-auth', (req, res) => {
 
     // Store state as a cookie on the client
     res.cookie('state', state, {
-        maxAge: 15 * 60000,             // cookie will be removed after 15 min
+        maxAge: 15 * 60 * 1000,         // cookie will be removed after 15 min
         httpOnly: true,                 // cookie cannot be read by browser javascript
         secure: true,                   // cookie can only be used with HTTPS
         path: process.env.redirect_uri  // cookie can only be used with our uri
@@ -250,7 +247,7 @@ app.get('/second-step-auth', (req, res) => {
         code: code,
     };
 
-    // Lets ask the auth server for an access and refresh token
+    // Lets ask the auth server for an access token
     request.post(tokenExchangeEndpoint, {
         form: requestBody
     }, (error, responseObj, responseBody) => {
@@ -262,9 +259,6 @@ app.get('/second-step-auth', (req, res) => {
             res.send();
             return;
         }
-
-        console.log(codeVerifier);
-        console.log(responseObj);
 
         handleNewToken(JSON.parse(responseBody), res);
     });
@@ -327,32 +321,34 @@ Finally, we handle the response from Asana! Add this function next to the `getRa
 function handleNewToken(body, res) {
     let accessToken = body.access_token;
     let expiresIn = body.expires_in;
-    let refreshToken = body.refresh_token;
     let userData = body.data;
+    
+    // const refreshToken = body.refresh_token;
+    // If you want to persist logins, you should use SQL, NoSQL or some other persistent database to store refresh
+    // tokens.
 
     console.log("Storing access & refresh token for " + userData.name + " (" + userData.gid + ")");
 
-    res.cookie("access_token", accessToken);
-
-    tokenCache[accessToken] = {
-        createdAt: Date.now(),
-        expiresIn: expiresIn,
-        refreshToken: refreshToken
-    };
+    res.cookie("access_token", accessToken, {
+        maxAge: expiresIn * 1000,       // express uses milliseconds while Asana gives seconds
+        path: process.env.redirect_uri  // cookie should only be used with our uri
+    });
 
     res.redirect(redirectUri);
 }
 ```
 
 This function grabs all of the variables we want to use from response body. It sets the `access_token` as a cookie for 
-the user, and then stores the `refresh_token` (and some other data) in our `tokenCache`. In most cases, the `tokenCache` 
+the user, and could store the `refresh_token` (and other data) in a `tokenCache`. In most cases, the `tokenCache` 
 should be a secure database instead of a simple cache. This is because the `refresh_token` is what allows you to keep a
-user logged in to your app, without having them re-authenticate with Asana every hour. More specifically, when your 
-cache is wiped, you lose all of your refresh tokens.
+user logged in to your app, without having them re-authenticate with Asana every hour. More specifically to Google Cloud 
+Functions or Lambda, when your cache is wiped (which they do without warning), using only the cache would mean you lose 
+all of your refresh tokens. Users would need to re-auth once their `access_token` expired.
 
-**Note**: If your app does not need `refresh_token` logic, you can remove the `tokenCache` and all the surrounding 
-logic. This is simpler, but it means users will have to re-login every hour they're using the app. However, re-login is 
-usually quick, as they do not have to explicitly click "Allow" on Asana when they have already allowed it.
+**Note**: If your app does needs `refresh_token` logic, you should set up a database and follow best practices for 
+storing them. Not using refresh tokens is simpler, but means users will have to re-login every hour they're using the 
+app. However, re-login is usually quick, as users do not have to explicitly click "Allow" on Asana when they have 
+already allowed it.
 
 The final thing this function does is redirect the user back to the redirectUri.
 
@@ -380,7 +376,7 @@ move over to building our webpage.
 ## The Webpage
 
 This webpage is going to be our front end. This is an over-simplified website that we will use to prove the OAuth
-steps work as expected.
+steps work as expected. The steps here demonstrate how you could implement something similar on a more complex site.
 
 We're going to use a single `index.html` file for this for simplicity.
 
@@ -411,6 +407,8 @@ In the body, lets put in some divs. Each div will represent a different state th
     <div id="authenticated-holder" style="display: none;">
         <p>Congrats! You're authenticated!</p>
         <button id="clear-auth">Clear Auth Cookie</button>
+        <button id="prove-auth">Prove Auth</button>
+        <p id="prove-auth-text"></p>
     </div>
     <div id="error-holder" style="display: none;">
         <p id="error-text">Something failed!</p>
@@ -418,7 +416,8 @@ In the body, lets put in some divs. Each div will represent a different state th
 </body>
 ```
 
-Let's add some basic style to our loading icon. An animated loading icon is the heart of any quality app:
+Let's add some basic style to our loading icon. An animated loading icon is the heart of any quality app, but feel free 
+to skip this if you'd like:
 
 ```html
     ...
@@ -458,8 +457,8 @@ Finally, lets add a script tag that will do all of the work. Lets add some helpe
 <script>
     window.onload = function () {
         function getCookie(name) {
-            var value = "; " + document.cookie;
-            var parts = value.split("; " + name + "=");
+            let value = "; " + document.cookie;
+            let parts = value.split("; " + name + "=");
             if (parts.length === 2) return parts.pop().split(";").shift();
         }
 
@@ -468,8 +467,8 @@ Finally, lets add a script tag that will do all of the work. Lets add some helpe
         }
 
         function handleError(error_message) {
-            var error = document.getElementById("error-holder");
-            var errorText = document.getElementById("error-text");
+            let error = document.getElementById("error-holder");
+            let errorText = document.getElementById("error-text");
 
             error.style.display = "block";
             errorText.innerText = error_message;
@@ -512,16 +511,41 @@ proof that we're logged in.
 let access_token = getCookie("access_token");
 
 if (access_token) {
-  let authenticated = document.getElementById("authenticated-holder");
-  authenticated.style.display = "block";
+    let authenticated = document.getElementById("authenticated-holder");
+    authenticated.style.display = "block";
 
-  let clear_auth_button = document.getElementById("clear-auth");
+    let prove_auth_button = document.getElementById("prove-auth");
+    let prove_auth_text = document.getElementById("prove-auth-text");
+    let clear_auth_button = document.getElementById("clear-auth");
 
-  clear_auth_button.onclick = function () {
-    deleteCookie("access_token");
+    prove_auth_button.onclick = function () {
+        prove_auth_text.innerText = "Loading...";
 
-    window.location.reload();
-  }
+        let headers = new Headers();
+        headers.append("Authorization", "Bearer " + access_token);
+        let request = new Request('https://app.asana.com/api/1.0/users/me', {
+            method: "GET",
+            headers: headers
+        });
+
+        fetch(request)
+            .then(function (response) {
+                if (!response.ok) {
+                    handleError(response.statusText);
+                    return;
+                }
+
+                response.text().then(function (text) {
+                    prove_auth_text.innerText = text;
+                });
+            });
+    };
+
+    clear_auth_button.onclick = function () {
+        deleteCookie("access_token");
+
+        window.location.reload();
+    }
 }
 
 function getCookie(name) { 
@@ -540,12 +564,13 @@ supplied a `code`.
 ...
     window.location.reload();
   }
-} else if (code) {
+}  else if (code) {
   let loading = document.getElementById("loading-holder");
   loading.style.display = "block";
 
   let request = new Request(pathUrl + '/second-step-auth?code='+code+"&state="+state, {
-      method: 'GET'
+      method: 'GET',
+      credentials: 'true'
   });
 
   fetch(request)
@@ -578,34 +603,33 @@ The last thing we need to handle is when an unauthenticated user comes to the we
     window.location.reload();
   }
 } else {
-  let unauthenticated = document.getElementById("unauthenticated-holder");
-  unauthenticated.style.display = "block";
+ let unauthenticated = document.getElementById("unauthenticated-holder");
+ unauthenticated.style.display = "block";
 
-  let auth_button = document.getElementById("auth-with-asana-button");
-  auth_button.onclick = function () {
-      var request = new Request(pathUrl + '/first-step-auth', {
-          method: 'GET'
-      });
+ let auth_button = document.getElementById("auth-with-asana-button");
+ auth_button.onclick = function () {
+     let request = new Request(pathUrl + '/first-step-auth', {
+         method: 'GET'
+     });
 
-      fetch(request)
-          .then(function (response) {
-              if (!response.ok) {
-                  handleError(response.statusText);
-                  return;
-              }
+     fetch(request)
+         .then(function (response) {
+             if (!response.ok) {
+                 handleError(response.statusText);
+                 return;
+             }
 
-              response.json().then(function(data) {
-                  window.location.href = "https://app.asana.com/-/oauth_authorize" +
-                      "?client_id=" + data.clientId +
-                      "&code_challenge=" + data.codeChallenge +
-                      "&code_challenge_method=" + data.challengeMethod +
-                      "&redirect_uri=" + data.redirectUri +
-                      "&response_type=" + "code" +
-                      "&state=" + data.state +
-                      "&display_ui=always";
-              });
-          });
-  }
+             response.json().then(function(data) {
+                 window.location.href = "https://app.asana.com/-/oauth_authorize" +
+                     "?client_id=" + data.clientId +
+                     "&code_challenge=" + data.codeChallenge +
+                     "&code_challenge_method=" + data.challengeMethod +
+                     "&redirect_uri=" + data.redirectUri +
+                     "&response_type=" + "code" +
+                     "&state=" + data.state;
+             });
+         });
+ }
 }
 
 function getCookie(name) { 

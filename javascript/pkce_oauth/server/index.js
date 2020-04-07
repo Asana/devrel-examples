@@ -80,7 +80,6 @@ app.get('/second-step-auth', (req, res) => {
     // exchange with the codeVerifier.
     if (req.query.state !== state) {
         console.log('Failed state verification');
-        console.log(req.query.state + " VS " + state);
         res.statusMessage = "State params did not match";
         res.status(401);
         res.send();

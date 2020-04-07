@@ -38,7 +38,9 @@
                                 return;
                             }
 
-                            prove_auth_text.innerText = response.text();
+                            response.text().then(function (text) {
+                                prove_auth_text.innerText = text;
+                            });
                         });
                 };
 
