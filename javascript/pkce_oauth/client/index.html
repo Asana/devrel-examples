@@ -17,7 +17,30 @@
                 let authenticated = document.getElementById("authenticated-holder");
                 authenticated.style.display = "block";
 
+                let prove_auth_button = document.getElementById("prove-auth");
+                let prove_auth_text = document.getElementById("prove-auth-text");
                 let clear_auth_button = document.getElementById("clear-auth");
+
+                prove_auth_button.onclick = function () {
+                    prove_auth_text.innerText = "Loading...";
+
+                    let headers = new Headers();
+                    headers.append("Authorization", "Bearer " + access_token);
+                    let request = new Request('https://app.asana.com/api/1.0/users/me', {
+                        method: "GET",
+                        headers: headers
+                    });
+
+                    fetch(request)
+                        .then(function (response) {
+                            if (!response.ok) {
+                                handleError(response.statusText);
+                                return;
+                            }
+
+                            prove_auth_text.innerText = response.text();
+                        });
+                };
 
                 clear_auth_button.onclick = function () {
                     deleteCookie("access_token");
@@ -29,7 +52,8 @@
                 loading.style.display = "block";
 
                 let request = new Request(pathUrl + '/second-step-auth?code='+code+"&state="+state, {
-                    method: 'GET'
+                    method: 'GET',
+                    credentials: 'true'
                 });
 
                 fetch(request)
@@ -50,7 +74,7 @@
 
                 let auth_button = document.getElementById("auth-with-asana-button");
                 auth_button.onclick = function () {
-                    var request = new Request(pathUrl + '/first-step-auth', {
+                    let request = new Request(pathUrl + '/first-step-auth', {
                         method: 'GET'
                     });
 
@@ -68,16 +92,15 @@
                                     "&code_challenge_method=" + data.challengeMethod +
                                     "&redirect_uri=" + data.redirectUri +
                                     "&response_type=" + "code" +
-                                    "&state=" + data.state +
-                                    "&display_ui=always";
+                                    "&state=" + data.state;
                             });
                         });
                 }
             }
 
             function getCookie(name) {
-                var value = "; " + document.cookie;
-                var parts = value.split("; " + name + "=");
+                let value = "; " + document.cookie;
+                let parts = value.split("; " + name + "=");
                 if (parts.length === 2) return parts.pop().split(";").shift();
             }
 
@@ -86,8 +109,8 @@
             }
 
             function handleError(error_message) {
-                var error = document.getElementById("error-holder");
-                var errorText = document.getElementById("error-text");
+                let error = document.getElementById("error-holder");
+                let errorText = document.getElementById("error-text");
 
                 error.style.display = "block";
                 errorText.innerText = error_message;
@@ -132,6 +155,8 @@
     <div id="authenticated-holder" style="display: none;">
         <p>Congrats! You're authenticated!</p>
         <button id="clear-auth">Clear Auth Cookie</button>
+        <button id="prove-auth">Prove Auth</button>
+        <p id="prove-auth-text"></p>
     </div>
     <div id="error-holder" style="display: none;">
         <p id="error-text">Something failed!</p>
