@@ -134,7 +134,6 @@ function handleNewToken(body, res) {
 
     res.cookie("access_token", accessToken, {
         maxAge: expiresIn * 1000,       // express uses milliseconds while Asana gives seconds
-        path: process.env.redirect_uri  // cookie should only be used with our uri
     });
 
     res.redirect(redirectUri);

@@ -54,8 +54,7 @@
                 loading.style.display = "block";
 
                 let request = new Request(pathUrl + '/second-step-auth?code='+code+"&state="+state, {
-                    method: 'GET',
-                    credentials: 'true'
+                    method: 'GET'
                 });
 
                 fetch(request)
