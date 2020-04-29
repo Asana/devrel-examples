@@ -7,12 +7,14 @@
     <script>
         window.onload = function () {
             let url = new URL(window.location.href);
-            let pathUrl = [location.protocol, '//', location.host, location.pathname].join('');
+            let app_server = new URL("https://example.com");
+
             let code = url.searchParams.get("code");
             let state = url.searchParams.get("state");
 
             let access_token = getCookie("access_token");
 
+            // Check if we are authenticated
             if (access_token) {
                 let authenticated = document.getElementById("authenticated-holder");
                 authenticated.style.display = "block";
@@ -49,53 +51,39 @@
 
                     window.location.reload();
                 }
+            // Check if we're mid-OAuth
             } else if (code) {
-                let loading = document.getElementById("loading-holder");
-                loading.style.display = "block";
+                const secondStepUri = app_server.href +
+                    '?code=' + code +
+                    '&state=' + state +
+                    '&redirect_uri=' + window.location.href.split('?')[0];
 
-                let request = new Request(pathUrl + '/second-step-auth?code='+code+"&state="+state, {
-                    method: 'GET'
-                });
+                // If your server and front end are hosted under the same domain "my_app.com", you can use window
+                // location for the token exchange, as a same domain server can set a cookie for us.
+                if (url.host === app_server.host) {
+                    window.location = secondStepUri;
 
-                fetch(request)
-                    .then(function (response) {
-                        if (!response.ok) {
-                            handleError(response.statusText);
-                            return;
-                        }
-
-                        console.log("We should be logged in.");
-
-                        // Reload the page without the query params
-                        window.location = window.location.href.split("?")[0];
+                // Otherwise, we will need to use fetch and parse the token out ourselves.
+                } else {
+                    fetch(secondStepUri + "&no_redirect=true", {
+                        credentials: 'include'
                     })
+                        .then((response) => {
+                            return response.json();
+                        })
+                        .then((data) => {
+                            document.cookie = "access_token=" + data.accessToken + "; max-age=" + data.expiresIn;
+                            window.location.href = window.location.href.split('?')[0];
+                        });
+                }
+            // Otherwise, assume we're unauthenticated
             } else {
                 let unauthenticated = document.getElementById("unauthenticated-holder");
                 unauthenticated.style.display = "block";
 
                 let auth_button = document.getElementById("auth-with-asana-button");
                 auth_button.onclick = function () {
-                    let request = new Request(pathUrl + '/first-step-auth', {
-                        method: 'GET'
-                    });
-
-                    fetch(request)
-                        .then(function (response) {
-                            if (!response.ok) {
-                                handleError(response.statusText);
-                                return;
-                            }
-
-                            response.json().then(function(data) {
-                                window.location.href = "https://app.asana.com/-/oauth_authorize" +
-                                    "?client_id=" + data.clientId +
-                                    "&code_challenge=" + data.codeChallenge +
-                                    "&code_challenge_method=" + data.challengeMethod +
-                                    "&redirect_uri=" + data.redirectUri +
-                                    "&response_type=" + "code" +
-                                    "&state=" + data.state;
-                            });
-                        });
+                    window.location = app_server + '?redirect_uri='+window.location;
                 }
             }
 

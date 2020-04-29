@@ -1,0 +1,22 @@
+# serverless.yml
+
+service: my-express-application
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: default
+  region: us-east-1
+
+functions:
+  app:
+    handler: index.handler
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: {proxy+}
+          method: ANY
+          cors: true
