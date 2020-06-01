@@ -4,151 +4,87 @@
     <meta charset="UTF-8">
     <title>Asana OAuth</title>
 
+    <script src="node_modules/@bity/oauth2-auth-code-pkce/index.umd.js"></script>
+
     <script>
-        window.onload = function () {
-            let url = new URL(window.location.href);
-            let app_server = new URL("https://example.com");
+        const { OAuth2AuthCodePKCE } = window.OAuth2AuthCodePKCE;
 
-            let code = url.searchParams.get("code");
-            let state = url.searchParams.get("state");
+        // This is just an example using our infrastructure. This was developed against
+        // ORY Hydra, if that help to know. You will need to change the values to
+        // something you have access to.
+        const oauth = new OAuth2AuthCodePKCE({
+            authorizationUrl: 'https://app.asana.com/-/oauth_authorize',
+            tokenUrl: '{your_token_url}',
+            clientId: '{client_id}',
+            scopes: [],
+            redirectUrl: 'http://localhost:8338/'
+        });
 
-            let access_token = getCookie("access_token");
+        function authorize() { oauth.fetchAuthorizationCode(); }
 
-            // Check if we are authenticated
-            if (access_token) {
-                let authenticated = document.getElementById("authenticated-holder");
-                authenticated.style.display = "block";
+        oauth.isReturningFromAuthServer()
+            .then(hasAuthCode => {
+                if (!hasAuthCode) { console.log("Something wrong...no auth code."); }
+                return oauth.getAccessToken().then((token) => {
+                    if (token.token.value) {
+                        authenticated();
+                    } else {
+                        throw "Token Exchange Failed";
+                    }
+                });
+            })
+            .catch((potentialError) => {
+                if (potentialError) { console.log(potentialError); }
+            });
 
-                let prove_auth_button = document.getElementById("prove-auth");
-                let prove_auth_text = document.getElementById("prove-auth-text");
-                let clear_auth_button = document.getElementById("clear-auth");
+        ///////////////////////
 
-                prove_auth_button.onclick = function () {
-                    prove_auth_text.innerText = "Loading...";
+        // Check if we're already logged in
+        oauth.getAccessToken().then((token) => {
+            if (token.token.value) {
+                authenticated();
+            }
+        };
 
-                    let headers = new Headers();
-                    headers.append("Authorization", "Bearer " + access_token);
-                    let request = new Request('https://app.asana.com/api/1.0/users/me', {
-                        method: "GET",
-                        headers: headers
-                    });
+        function authenticated() {
+            // Remove code and state from the URL
+            window.history.replaceState({}, document.title, window.location.href.split("?")[0]);
 
-                    fetch(request)
-                        .then(function (response) {
-                            if (!response.ok) {
-                                handleError(response.statusText);
-                                return;
-                            }
+            // Show the "logged in" view
+            document.getElementById("auth-with-asana-button").style.display = "none";
+            document.getElementById("authenticated-holder").style.display = "block";
+        }
 
-                            response.text().then(function (text) {
-                                prove_auth_text.innerText = text;
-                            });
-                        });
-                };
+        function clearAuth() {
+            localStorage.clear();
+            window.location = window.location;
+        }
 
-                clear_auth_button.onclick = function () {
-                    deleteCookie("access_token");
-
-                    window.location.reload();
-                }
-            // Check if we're mid-OAuth
-            } else if (code) {
-                const secondStepUri = app_server.href +
-                    '?code=' + code +
-                    '&state=' + state +
-                    '&redirect_uri=' + window.location.href.split('?')[0];
-
-                // If your server and front end are hosted under the same domain "my_app.com", you can use window
-                // location for the token exchange, as a same domain server can set a cookie for us.
-                if (url.host === app_server.host) {
-                    window.location = secondStepUri;
-
-                // Otherwise, we will need to use fetch and parse the token out ourselves.
-                } else {
-                    fetch(secondStepUri + "&no_redirect=true", {
-                        credentials: 'include'
+        function proveAuth() {
+            oauth.getAccessToken().then((token) => {
+                fetch("https://app.asana.com/api/1.0/users/me?opt_pretty", {
+                    headers: {
+                        'Authorization': 'Bearer ' + token.token.value
+                    }
+                })
+                    .then((response) => {
+                        return response.text();
                     })
-                        .then((response) => {
-                            return response.json();
-                        })
-                        .then((data) => {
-                            document.cookie = "access_token=" + data.accessToken + "; max-age=" + data.expiresIn;
-                            window.location.href = window.location.href.split('?')[0];
-                        });
-                }
-            // Otherwise, assume we're unauthenticated
-            } else {
-                let unauthenticated = document.getElementById("unauthenticated-holder");
-                unauthenticated.style.display = "block";
-
-                let auth_button = document.getElementById("auth-with-asana-button");
-                auth_button.onclick = function () {
-                    window.location = app_server + '?redirect_uri='+window.location;
-                }
-            }
-
-            function getCookie(name) {
-                let value = "; " + document.cookie;
-                let parts = value.split("; " + name + "=");
-                if (parts.length === 2) return parts.pop().split(";").shift();
-            }
-
-            function deleteCookie(name) {
-                document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            }
-
-            function handleError(error_message) {
-                let error = document.getElementById("error-holder");
-                let errorText = document.getElementById("error-text");
-
-                error.style.display = "block";
-                errorText.innerText = error_message;
-            }
+                    .then((text) => {
+                        document.getElementById("prove-auth-text").innerText = text;
+                    });
+            });
         }
     </script>
-
-    <style>
-        .lds-dual-ring {
-            display: inline-block;
-            width: 64px;
-            height: 64px;
-        }
-        .lds-dual-ring:after {
-            content: " ";
-            display: block;
-            width: 46px;
-            height: 46px;
-            margin: 1px;
-            border-radius: 50%;
-            border: 5px solid;
-            border-color: #000 transparent #000 transparent;
-            animation: lds-dual-ring 1.2s linear infinite;
-        }
-        @keyframes lds-dual-ring {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
 </head>
 <body>
-    <div id="unauthenticated-holder" style="display: none;">
-        <button id="auth-with-asana-button">Authenticate with Asana</button>
-    </div>
-    <div id="loading-holder" style="display: none">
-        <div class="lds-dual-ring"></div>
-    </div>
+    <button id="auth-with-asana-button" onclick="authorize()">Authenticate with Asana</button>
+
     <div id="authenticated-holder" style="display: none;">
         <p>Congrats! You're authenticated!</p>
-        <button id="clear-auth">Clear Auth Cookie</button>
-        <button id="prove-auth">Prove Auth</button>
+        <button id="clear-auth" onclick="clearAuth()">Clear Auth Cookie</button>
+        <button id="prove-auth" onclick="proveAuth()">Prove Auth</button>
         <p id="prove-auth-text"></p>
-    </div>
-    <div id="error-holder" style="display: none;">
-        <p id="error-text">Something failed!</p>
     </div>
 </body>
 </html>

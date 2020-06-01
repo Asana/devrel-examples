@@ -1,28 +1,25 @@
 const serverless = require('serverless-http');
 const express = require('express');
-const cors = require('cors');
+const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const crypto = require('crypto');
-const base64url = require('base64-url');
+const cors = require('cors');
 const request = require('request');
 
-const challengeMethod = "S256";
-const authorizationGrantType = "authorization_code";
-
-const clientId = process.env.client_id;
 const clientSecret = process.env.client_secret;
-const oauthAuthorizeEndpoint = process.env.oauth_authorize_endpoint;
 const tokenExchangeEndpoint = process.env.token_exchange_endpoint;
-
-const stateCache = {};
 
 const app = express();
 
+// We can read cookies
 app.use(cookieParser());
+
+// We accept json and form encoded bodys
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Enable CORS and assume the allowed origins are the redirect uris.
 // If your client shares the same domain as the server, you should remove this
-const allowedOrigins = process.env.redirect_uri.split(',');
+const allowedOrigins = (process.env.redirect_uri || "").split(',');
 app.use(cors({
     credentials: true,
     origin: function(origin, callback){
@@ -38,143 +35,47 @@ app.use(cors({
     }
 }));
 
-// Base endpoint. This should return our html.
-app.get('/*', (req, res) => {
+// Token exchange endpoint.
+app.post('/*', (req, res) => {
     console.log('In /');
 
-    const state = req.cookies.state;
+    let body = req.body;
 
-    if (!state) {
-        console.log('In first-step-auth');
+    body.client_secret = clientSecret;
 
-        const redirectUri = getRedirectUri(req);
-        const state = getRandomString();
-        const codeVerifier = getRandomString();
+    // If we're refreshing a token, only trust the cookie refresh token
+    if (body.grant_type === "refresh_token") {
+        body.refresh_token = req.cookies.refresh_token;
+    }
 
-        // We use crypto to generate sha256 bytes, and we encode them with base64
-        let codeChallenge = crypto.createHash('sha256')
-            .update(codeVerifier)
-            .digest('base64');
+    // Lets ask the auth server for an access token
+    request.post(tokenExchangeEndpoint, {
+        form: body
+    }, (error, responseObj, responseBody) => {
+        console.log('In response from Asana');
 
-        // Because the client will be sending it in the url, lets url encode it for them
-        codeChallenge = base64url.escape(codeChallenge);
-
-        // Save that the state and codeVerifier were given to the same person
-        stateCache[state] = codeVerifier;
-
-        // Store state as a cookie on the client
-        res.cookie('state', state, {
-            maxAge: 15 * 60 * 1000,         // cookie will be removed after 15 min
-            httpOnly: true,                 // cookie cannot be read by browser javascript
-            secure: true                    // cookie can only be used with HTTPS
-        });
-
-        // Redirect the client
-        res.redirect(oauthAuthorizeEndpoint +
-            "?client_id=" + clientId +
-            "&code_challenge=" + encodeURIComponent(codeChallenge) +
-            "&code_challenge_method=" + challengeMethod +
-            "&redirect_uri=" + encodeURIComponent(redirectUri) +
-            "&response_type=" + "code" +
-            "&state=" + state);
-    } else {
-        console.log('In second-step-auth');
-
-        // The user doesn't need the state cookie anymore
-        res.clearCookie("state");
-
-        // This check is used to prevent XSS attacks. If you have implemented PKCE correctly
-        // you should not need to do this check, as Asana will protect the user during the token
-        // exchange with the codeVerifier.
-        if (req.query.state !== state) {
-            console.log('Failed state verification');
-            res.statusMessage = "State params did not match";
+        if (error) {
+            console.error(error);
+            res.statusMessage = "Asana did not approve the request.";
             res.status(401);
             res.send();
             return;
         }
 
-        const redirectUri = getRedirectUri(req);
-        const code = req.query.code;
-        const codeVerifier = stateCache[state];
+        let tokenResponse = JSON.parse(responseBody);
 
-        const requestBody = {
-            grant_type: authorizationGrantType,
-            client_id: clientId,
-            client_secret: clientSecret,
-            code_verifier: codeVerifier,
-            redirect_uri: redirectUri,
-            code: code,
-        };
-
-        console.log('Requesting token from Asana');
-
-        // Lets ask the auth server for an access token
-        request.post(tokenExchangeEndpoint, {
-            form: requestBody
-        }, (error, responseObj, responseBody) => {
-            console.log('In response from Asana');
-
-            if (error) {
-                console.error(error);
-                res.statusMessage = "Asana did not approve the request.";
-                res.status(401);
-                res.send();
-                return;
-            }
-
-            handleNewToken(JSON.parse(responseBody), req, res);
+        // Browser Javascript should not see the refresh token, so lets strip it
+        // out and add it as an httpOnly cookie.
+        res.cookie("refresh_token", tokenResponse.refresh_token, {
+            httpOnly: true,  // dont let browser javascript access cookie ever
+            secure: true
         });
-    }
+        delete tokenResponse.refresh_token;
+
+        // For our purpose, we will give the user their access_token, so they can
+        // make calls straight to Asana from the browser.
+        res.send(tokenResponse);
+    });
 });
-
-// Handles a response from the auth server.
-function handleNewToken(body, req, res) {
-    const accessToken = body.access_token;
-    const expiresIn = body.expires_in;
-    const userData = body.data;
-
-    // const refreshToken = body.refresh_token;
-    // If you want to persist logins, you should use SQL, NoSQL or some other persistent database to store refresh
-    // tokens.
-
-    console.log("Returning access token for " + userData.name + " (" + userData.gid + ")");
-
-    // This server allows for a redirect flow, and a request flow for token exchange. We determine which flow to use
-    // depending on this query param.
-    if (req.query.no_redirect) {
-        const result = {
-            accessToken: accessToken,
-            expiresIn: expiresIn,
-            userData: userData
-        };
-
-        res.json(result);
-    } else {
-        res.cookie("access_token", accessToken, {
-            maxAge: expiresIn * 1000,       // express uses milliseconds while Asana gives seconds
-        });
-
-        res.redirect(getRedirectUri(req));
-    }
-}
-
-// Allows for multiple redirect_uri locations if defined in our environment variables. Defaults to first one.
-function getRedirectUri(req) {
-    const redirectUriOptions = process.env.redirect_uri.split(',');
-    const requestedRedirectUri = req.query.redirect_uri;
-
-    if (requestedRedirectUri && redirectUriOptions.includes(requestedRedirectUri)) {
-        return requestedRedirectUri;
-    } else {
-        return redirectUriOptions[0];
-    }
-}
-
-// Generates a cryptographically random string
-function getRandomString() {
-    const randomBytesBuffer = crypto.randomBytes(64);
-    return randomBytesBuffer.toString('hex');
-}
 
 module.exports.handler = serverless(app);
