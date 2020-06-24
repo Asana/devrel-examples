@@ -60,7 +60,7 @@ requirement without too much overhead. And until you get too much traffic, they'
 10. Go to your newly created API Gateway, and on the left hit Stages.
     1. Expand "default" and click "GET" under your lambda function name.
     2. Copy the "Invoke Url" at the top
-11. In `/client/index.html` on line 10, replace "https://example.com" with your Invoke URL.
+11. In `/client/index.html` on line 17, replace "{your_token_url}" with your Invoke URL.
     1. Either host your front end on a server or host it locally. I prefer to host it locally with `python -m SimpleHTTPServer 8338`.
     
 ## Debugging
