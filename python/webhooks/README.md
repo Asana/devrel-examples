@@ -12,6 +12,39 @@ For the purposes of this example, going through ngrok is OK, but it's important 
 
 The script itself has some instructions for getting it up and running, creating the webhook, and viewing the events in the console.
 
+## Usage
+
+1. Create a new [personal access token](https://developers.asana.com/docs/personal-access-token) (PAT).
+2. Set the PAT in the environment variable `TEMP_PAT`:
+
+```
+export TEMP_PAT={pat}
+```
+
+3. Set the workspace in the environment variable `ASANA_WORKSPACE`:
+
+```
+export ASANA_WORKSPACE={workspace_id}
+```
+
+4. Set the project ID in the environment variable `ASANA_PROJECT`:
+
+```
+export ASANA_PROJECT={project_id}
+```
+
+5. Run `ngrok http 8090`.
+6. Copy the subdomain (e.g., `e91dadc7`).
+7. Run the script with positional args:
+
+   - First arg: Your ngrok subdomain
+   - Second arg: Your ngrok port (i.e., `8090`)
+
+8. Visit `localhost:8090/all_webhooks` to see your hooks (if they exist).
+9. Make changes in the Asana app and see the logs from returned webhooks.
+
+Remember to deauthorize your temporary PAT when you're done.
+
 ## Security and the Webhook Handshake: What is X-Hook-Secret anyway?
 
 It's optional but recommended for you to use; you can get webhook events without it. It's a security precaution you can take on your end: you have a server up and running that can take incoming requests from just about anywhere. How do you know that there's not an attacker out there spoofing the sort of requests that Asana might be sending you? Webhooks don't have any **inbound** authentication; that is, Asana doesn't have to log in or send an auth token to _your_ server to prove it's Asana.
