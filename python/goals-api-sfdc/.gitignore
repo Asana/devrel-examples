@@ -1,0 +1,25 @@
+# Python
+venv/
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.py[cdo]
+
+# Python tooling
+.coverage
+.pytest_cache/
+.tox/
+
+# Project local config
+config.toml
+
+# Private key files
+*.pem
+
+# OS X
+.DS_Store
+
+# IntelliJ/PyCharm
+.idea/
+*.iml

@@ -1,0 +1,82 @@
+[asana]
+# Your Asana API access token. You need to create a service account to acquire
+# this.
+access_token="<YOUR ACCESS TOKEN HERE>"
+
+[salesforce]
+# Your salesforce username, usually in a mail address-like format.
+username="<YOUR SALESFORCE USERNAME HERE>"
+# Your Salesforce app client ID. Check README.md for the procedure for
+# acquiring this.
+client_id="<YOUR SALESFORCE APP CLIENT ID HERE>"
+# Your private key file in PEM format. Check README.md for the procedure for
+# # acquiring this.
+private_key_file="<YOUR SALESFORCE SELF-SIGNED PRIVATE KEY HERE>"
+
+[app]
+# Run this every 5 minutes
+cron_string="*/5 * * * *"
+# We have 2 goals to keep track of, these are configured in the next section
+goals=[
+    "example_1",
+    "example_2"
+]
+
+[goals]
+
+    # First example fetches data from salesforce
+    [goals.example_1]
+    goal_id="<YOUR GOAL GID HERE>"
+    source="salesforce_report"
+    sf_report_id="<YOUR SALESFORCE REPORT ID HERE>"
+    sf_metric="s!AMOUNT"
+
+    # Second example calculates its progress by measuring subgoals
+    [goals.example_2]
+    goal_id="<YOUR GOAL GID HERE>"
+    source="composite"
+    subgoals=[
+        "subgoal_1",
+        "subgoal_2",
+        "subgoal_3",
+    ]
+    weights=[
+        0.4,
+        0.1,
+        0.5
+    ]
+
+    # These subgoals have a fixed value
+    [goals.subgoal_1]
+    goal_id="<YOUR SUBGOAL GID HERE>"
+    source="fixed"
+    value="0.92"
+
+    [goals.subgoal_2]
+    goal_id="<YOUR SUBGOAL GID HERE>"
+    source="fixed"
+    value="40"
+
+    [goals.subgoal_3]
+    goal_id="<YOUR SUBGOAL GID HERE>"
+    source="fixed"
+    value="58000"
+
+# This gets fed into Python logging.config.dictConfig
+# For a tutorial on options available see:
+# https://docs.python.org/3/howto/logging.html#logging-basic-tutorial
+[logging]
+version=1
+
+    [logging.formatters.simple]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+    [logging.handlers.console]
+    class="logging.StreamHandler"
+    level="DEBUG"
+    formatter="simple"
+    stream="ext://sys.stdout"
+
+    [logging.root]
+    level="INFO"
+    handlers=["console"]
