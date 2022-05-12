@@ -33,7 +33,7 @@ ngrok is used to create a publicly-accessible "tunnel" (i.e., URL) to a port on 
 npm run dev
 ```
 
-2. Create a webhook by calling [POST /webhooks](https://developers.asana.com/docs/establish-a-webhook) and specifying given resource (e.g., a task). Feel free to use the [Postman Collection](https://developers.asana.com/docs/using-postman) to make your request.
+2. Create a webhook by calling [POST /webhooks](https://developers.asana.com/docs/establish-a-webhook) and specifying given resource (e.g., a task). Feel free to use the [Postman Collection](https://developers.asana.com/docs/using-postman) to make your request. Note: You must point the [target](https://developers.asana.com/docs/webhook) request parameter to your public URL for `http://localhost:8000/receiveWebhook` (i.e., replace the localhost domain with the unique ngrok domain).
 
 3. In the Asana UI (or via the API), update the resource (e.g., change the task name).
 
