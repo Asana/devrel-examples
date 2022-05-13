@@ -2,7 +2,7 @@
 
 This example server demonstrates how to set up and receive events with [Asana webhooks](https://developers.asana.com/docs/webhooks). In particular, this project demonstrates:
 
-1. Creating a webhook (to track changes on a given [task](https://developers.asana.com/docs/tasks))
+1. Creating a webhook to track changes on a given resource (e.g., a [task](https://developers.asana.com/docs/tasks))
 2. Receiving notifications about changes to that task
 3. Verifying the integrity of notifications with HMAC signatures
 
