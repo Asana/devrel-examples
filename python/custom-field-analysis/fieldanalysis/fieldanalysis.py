@@ -1,5 +1,3 @@
-"""uploads projects to Asana"""
-
 __version__ = "0.1"
 
 import enum

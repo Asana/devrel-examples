@@ -2,24 +2,7 @@ import sys
 import csv
 from .asanaUtils.client import asana_client
 
-"""
-input menu + associated functions
-
-used for gathering all user inputs, mapping fields, and verifying that mapping before proceeding.
-"""
-
-
 async def menu(session):
-    """
-    Collect user inputs of: personal access token, portfolio link, team link, and CSV file.
-    provides back the team, mapped project data, necessary project statuses, attribute mapping, portfolio, and the user's personal access token
-        project_data,
-        project_statuses,
-        portfolio,
-        session,
-        token,
-    """
-
     # Get access token
     token = input("Enter your personal access token: ")
 
