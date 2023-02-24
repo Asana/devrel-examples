@@ -1,0 +1,3 @@
+fieldanalysis/dist/*
+*.pyc
+*/__pycache__
