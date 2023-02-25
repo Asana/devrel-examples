@@ -12,7 +12,7 @@ To check the version of Python installed on your local machine, open your termin
 python -V
 ```
 
-If you need to install a newer version of python, you can do so at https://www.python.org/downloads/
+If you need to install a newer version of Python, you can do so at https://www.python.org/downloads/
 
 _Note: If you install a newer version of Python, be sure to also install certificates (by running the "install certificates" script found in the Python folder)._
 
