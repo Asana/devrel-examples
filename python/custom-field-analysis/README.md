@@ -57,6 +57,6 @@ Because the script will be running many calls in parallel, note that this messag
 ## Additional notes
 
 * All source code is contained within the `fieldanalysis` directory
-    * The `fieldanalysis()` function within `fieldanalysis.py` coordinates all other functionality of the script
-* `menu.py` contains the menu and a few helper functions to gather user input and map the CSV to the portfolio fields
+    * `fieldanalysis.py` contains the main business logic of the script
+    * `menu.py` contains the menu and a few helper functions to gather user input and map the CSV to the portfolio fields
 * The `asanaUtils` directory contains a `client.py` file, which handles formatting and sending API calls, along with handling rate limits
