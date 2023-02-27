@@ -1,6 +1,6 @@
 # Field Analysis script
 
-The Field Analysis Python script is used to generate a CSV of [custom fields](https://developers.asana.com/docs/custom-fields-guide) in an Asana instance. Additionally, the script outputs a count of how frequently each field is used.
+The [Field Analysis Python script](https://developers.asana.com/docs/custom-field-analysis) is used to generate a CSV of [custom fields](https://developers.asana.com/docs/custom-fields-guide) in an Asana instance. Additionally, the script outputs a count of how frequently each field is used.
 
 ## Requirements
 
