@@ -17,7 +17,7 @@ import csv
 
 
 #  An asynchronous function to get all custom fields in Asana
-async def projectupload():
+async def get_fields():
 
     # Create the client session with aiohttp
     # This library allows us to send multiple API requests at once in conjunction with asyncio
@@ -39,6 +39,8 @@ async def projectupload():
 
         custom_fields = {}
 
+        # Fetch custom fields, iterating through all pages in the response.
+        # For more information on Pagination, see: https://developers.asana.com/docs/pagination
         while hasMore == True:
 
             if offset != "":
@@ -75,9 +77,10 @@ async def projectupload():
             "enum_option_names",
         ]
 
+        # if the user has indicated they would also like to see project counts, get all the projects:
         if projects_flag:
 
-            # Get all custom fields in a workspace
+            # Get all projects in the workspace, along with their custom fields
             hasMore = True
             limit = 100
             offset = ""
@@ -103,7 +106,7 @@ async def projectupload():
 
                 projects = result["data"]
 
-                # Paginate requests. For more information, see: https://developers.asana.com/docs/pagination
+                # Again, paginate requests. For more information, see: https://developers.asana.com/docs/pagination
                 if "next_page" in result:
                     if result["next_page"] != None:
                         offset = result["next_page"]["offset"]
@@ -112,6 +115,7 @@ async def projectupload():
                 else:
                     hasMore = False
 
+                # Add a +1 project count to each custom field referenced in each project
                 for project in projects:
                     totalCount += 1
                     for customFieldSetting in project["custom_field_settings"]:
@@ -134,9 +138,9 @@ async def projectupload():
 
         fileName = f"{workspace_name}_Asana_Custom_Field_Audit_Sheet.csv"
 
-        print(
-            f"Done! See the resulting CSV file in your current directory: {fileName}")
+        print(f"Done! See the resulting CSV file in your current directory: {fileName}")
 
+        # write to a CSV:
         with open(fileName, "w") as csvfile:
             writer = csv.DictWriter(
                 csvfile, fieldnames=headers, restval="", extrasaction="ignore"
@@ -145,6 +149,7 @@ async def projectupload():
             writer.writerows(list(custom_fields.values()))
 
     return
+
 
 ##############################################
 # Utils                                      #
@@ -155,7 +160,7 @@ def main():
     # Runs the project upload function asynchronously
 
     try:
-        asyncio.run(projectupload())
+        asyncio.run(get_fields())
     except KeyboardInterrupt:
         print("\nInterrupted - goodbye")
         try:
@@ -167,7 +172,7 @@ def main():
 # If this file is run directly via Python:
 if __name__ == "__main__":
     try:
-        asyncio.run(projectupload())
+        asyncio.run(get_fields())
     except KeyboardInterrupt:
         print("\nInterrupted - goodbye")
         try:
