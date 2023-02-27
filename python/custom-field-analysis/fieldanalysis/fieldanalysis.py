@@ -30,7 +30,7 @@ async def get_fields():
             token,
         ] = await menu(session)
 
-        hasMore = True
+        has_more = True
         limit = 100
         offset = ""
         # For more information on this API endpoint, see: https://developers.asana.com/reference/getcustomfieldsforworkspace
@@ -41,7 +41,7 @@ async def get_fields():
 
         # Fetch custom fields, iterating through all pages in the response.
         # For more information on Pagination, see: https://developers.asana.com/docs/pagination
-        while hasMore == True:
+        while has_more == True:
 
             if offset != "":
                 url = f"/workspaces/{workspace}/custom_fields?limit={limit}&opt_fields=gid,name,type,created_by.(name|email),enum_options&offset={offset}"
@@ -63,9 +63,9 @@ async def get_fields():
                 if result["next_page"] != None:
                     offset = result["next_page"]["offset"]
                 else:
-                    hasMore = False
+                    has_more = False
             else:
-                hasMore = False
+                has_more = False
 
         headers = [
             "gid",
@@ -81,15 +81,15 @@ async def get_fields():
         if projects_flag:
 
             # Get all projects in the workspace, along with their custom fields
-            hasMore = True
+            has_more = True
             limit = 100
             offset = ""
             url = f"/workspaces/{workspace}/projects?limit={limit}&opt_fields=custom_field_settings.custom_field.gid"
 
             # Total count of projects with custom fields
-            totalCount = 0
+            total_count = 0
 
-            while hasMore == True:
+            while has_more == True:
 
                 if offset != "":
                     # For more information on this API endpoint, see: https://developers.asana.com/reference/getprojectsforworkspace
@@ -111,20 +111,20 @@ async def get_fields():
                     if result["next_page"] != None:
                         offset = result["next_page"]["offset"]
                     else:
-                        hasMore = False
+                        has_more = False
                 else:
-                    hasMore = False
+                    has_more = False
 
                 # Add a +1 project count to each custom field referenced in each project
                 for project in projects:
-                    totalCount += 1
+                    total_count += 1
                     for customFieldSetting in project["custom_field_settings"]:
                         if customFieldSetting["custom_field"]["gid"] in custom_fields:
                             custom_fields[customFieldSetting["custom_field"]["gid"]][
                                 "project_count"
                             ] += 1
 
-                print(f"Analyzing {totalCount} projects...")
+                print(f"Analyzing {total_count} projects...")
 
                 headers = [
                     "gid",
@@ -136,12 +136,14 @@ async def get_fields():
                     "enum_option_names",
                 ]
 
-        fileName = f"{workspace_name}_Asana_Custom_Field_Audit_Sheet.csv"
+        file_name = f"{workspace_name}_Asana_Custom_Field_Audit_Sheet.csv"
 
-        print(f"Done! See the resulting CSV file in your current directory: {fileName}")
+        print(
+            f"Done! See the resulting CSV file in your current directory: {file_name}"
+        )
 
         # write to a CSV:
-        with open(fileName, "w") as csvfile:
+        with open(file_name, "w") as csvfile:
             writer = csv.DictWriter(
                 csvfile, fieldnames=headers, restval="", extrasaction="ignore"
             )
