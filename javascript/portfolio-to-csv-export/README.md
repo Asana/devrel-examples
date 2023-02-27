@@ -33,4 +33,6 @@ The standard information outputted in the resulting CSV file include the followi
 * `start_on`
 * `due_on`
 
+In addition, the CSV file will also include details on any [custom fields](https://developers.asana.com/docs/custom-fields-guide) associated with those projects.
+
 To get more information on a project, you can request the project record by using its GID with the Asana API, as documented here: [GET /projects/{project_gid}](https://developers.asana.com/reference/getproject)
