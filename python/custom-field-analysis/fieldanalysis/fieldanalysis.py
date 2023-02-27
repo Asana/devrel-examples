@@ -11,16 +11,16 @@ from .menu import menu
 from .asanaUtils.client import asana_client
 import csv
 
-##############################################
-##              Main Function               ##
-##  orchestrates all other functionality    ##
-##############################################
+##################################################
+# Main Function (orchestrates all functionality) #
+##################################################
 
 
+#  An asynchronous function to get all custom fields in Asana
 async def projectupload():
-    """an async function to get all custom fields in Asana"""
 
-    # Create the client session with aiohttp. This library allows us to send multiple API requests at once in conjunction with asyncio
+    # Create the client session with aiohttp
+    # This library allows us to send multiple API requests at once in conjunction with asyncio
     async with aiohttp.ClientSession() as session:
 
         [
@@ -33,9 +33,12 @@ async def projectupload():
         hasMore = True
         limit = 100
         offset = ""
+        # For more information on this API endpoint, see: https://developers.asana.com/reference/getcustomfieldsforworkspace
+        # Note that this request uses also input/output options: https://developers.asana.com/docs/inputoutput-options
         url = f"/workspaces/{workspace}/custom_fields?limit={limit}&opt_fields=gid,name,type,created_by.(name|email),enum_options"
 
         custom_fields = {}
+
         while hasMore == True:
 
             if offset != "":
@@ -80,11 +83,13 @@ async def projectupload():
             offset = ""
             url = f"/workspaces/{workspace}/projects?limit={limit}&opt_fields=custom_field_settings.custom_field.gid"
 
-            totalcount = 0
+            # Total count of projects with custom fields
+            totalCount = 0
 
             while hasMore == True:
 
                 if offset != "":
+                    # For more information on this API endpoint, see: https://developers.asana.com/reference/getprojectsforworkspace
                     url = f"/workspaces/{workspace}/projects?limit={limit}&opt_fields=custom_field_settings.custom_field.gid&offset={offset}"
 
                 result = await asana_client(
@@ -98,6 +103,7 @@ async def projectupload():
 
                 projects = result["data"]
 
+                # Paginate requests. For more information, see: https://developers.asana.com/docs/pagination
                 if "next_page" in result:
                     if result["next_page"] != None:
                         offset = result["next_page"]["offset"]
@@ -107,14 +113,14 @@ async def projectupload():
                     hasMore = False
 
                 for project in projects:
-                    totalcount += 1
+                    totalCount += 1
                     for customFieldSetting in project["custom_field_settings"]:
                         if customFieldSetting["custom_field"]["gid"] in custom_fields:
                             custom_fields[customFieldSetting["custom_field"]["gid"]][
                                 "project_count"
                             ] += 1
 
-                print(f"Analyzing {totalcount} projects...")
+                print(f"Analyzing {totalCount} projects...")
 
                 headers = [
                     "gid",
@@ -140,10 +146,13 @@ async def projectupload():
 
     return
 
+##############################################
+# Utils                                      #
+##############################################
 
 # Main function which is targeted by the CLI command
 def main():
-    """runs the project upload function asynchronously"""
+    # Runs the project upload function asynchronously
 
     try:
         asyncio.run(projectupload())
@@ -166,7 +175,7 @@ if __name__ == "__main__":
         except SystemExit:
             os._exit(0)
 
-
+# Formats custom field values
 def flatten_custom_field_values(custom_field):
 
     if "enum_options" in custom_field:
