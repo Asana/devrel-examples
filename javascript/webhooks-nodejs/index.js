@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 
 // Global variable to store the x-hook-secret
-// Read more about the webhook "handshake" here: https://developers.asana.com/docs/webhooks
+// Read more about the webhook "handshake" here: https://developers.asana.com/docs/webhooks-guide#the-webhook-handshake
 let secret = "";
 
 // Local endpoint for receiving events
