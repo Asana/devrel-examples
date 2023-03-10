@@ -22,13 +22,9 @@ npm i
 
 ## Usage
 
-1. [Create an application](https://developers.asana.com/docs/oauth#register-an-application). Take note of your:
+1. [Create an application](https://developers.asana.com/docs/oauth#register-an-application). Take note of your **client ID** and **client secret**, and set the **redirect URI** to `localhost:3000/oauth-callback`.
 
-* Client ID
-* Client secret
-* Redirect URI
-
-2. Create a `./env` file (in the root directory of the project) with the required configurations:
+2. Create a `./.env` file (in the root directory of the project) with the required configurations:
 
 ```
 CLIENT_ID=your_client_id_here
@@ -37,7 +33,7 @@ REDIRECT_URI=your_redirect_uri_here
 COOKIE_SECRET=can_be_any_value
 ```
 
-You can view an example in the included `./env-example` file. Note that you should _never_ commit or otherwise expose your `./env` file publicly.
+You can view an example in the included `./.env-example` file. Note that you should _never_ commit or otherwise expose your `./.env` file publicly.
 
 3. Start the server:
 
