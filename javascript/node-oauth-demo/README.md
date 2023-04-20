@@ -22,7 +22,9 @@ npm i
 
 ## Usage
 
-1. [Create an application](https://developers.asana.com/docs/oauth#register-an-application). Take note of your **client ID** and **client secret**, and set the **redirect URI** to `localhost:3000/oauth-callback`.
+1. [Create an application](https://developers.asana.com/docs/oauth#register-an-application). Take note of your **client ID** and **client secret**, and set the **redirect URI** to `http://localhost:3000/oauth-callback`. 
+
+_Note: In order for a user to be able to authorize via the [user authorization endpoint](https://developers.asana.com/docs/oauth#user-authorization-endpoint), the application must be available in the user's workspace. See the [manage distribution](https://developers.asana.com/docs/manage-distribution) documentation for details._ 
 
 2. Create a `./.env` file (in the root directory of the project) with the required configurations:
 
