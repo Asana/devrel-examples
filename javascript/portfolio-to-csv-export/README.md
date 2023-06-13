@@ -10,7 +10,7 @@ Otherwise, ensure that you have the latest version of your preferred browser ins
 
 ## Usage
 
-The entry point for the script is `./index.html`, a page that embeds the client-side script: `./index.js`.
+The entry point for the script is `./index.html`, a page that embeds the client-side script `./index.js` and its helper/utility methods in `./utils.js`.
 
 Before you begin, be sure to obtain a [personal access token](https://developers.asana.com/docs/personal-access-token) (PAT). This personal access token is how the script authenticates with Asana to request data via the Asana API. Upon successful authentication, the script parses and formats that data into a single CSV file.
 
