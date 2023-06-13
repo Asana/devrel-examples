@@ -2,10 +2,16 @@
 <html>
   <head>
     <link rel="stylesheet" href="./style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
   </head>
   <body>
     <form onsubmit="return false" id="mainform">
-      <h2>Asana portfolio to CSV export tool</h2>
+      <h2>Report: Status updates from all projects in a portfolio</h2>
       <details style="display: block">
         <summary><b>Instructions</b></summary>
         <p>
@@ -56,44 +62,42 @@
           you have access to and can view in Asana.
         </p>
       </details>
+
       <div class="input-block">
         <label for="pat">Personal access token</label>
         <input
           id="pat"
+          class="form-control form-rounded"
           autocomplete="current-password"
           name="Personal Access Token"
           type="password"
           required
         />
       </div>
+
       <div class="input-block">
         <label for="pat">Portfolio GID</label>
-        <input type="text" id="portfolio" required />
+        <input
+          id="portfolio"
+          type="text"
+          class="form-control form-rounded"
+          required
+        />
       </div>
+
       <div class="input-block">
         <input
           id="submit"
-          type="submit"
+          type="button"
+          class="btn btn-primary"
           value="Generate CSV"
           onclick="runExport()"
         />
       </div>
+
       <div id="errorbox"></div>
-      <div class="lds-spinner" id="lds-spinner">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
     </form>
   </body>
   <script src="./index.js"></script>
+  <script src="./utils.js"></script>
 </html>
