@@ -176,7 +176,7 @@ function flattenProjectFields(project) {
     ),
     "Modified at": project["modified_at"] || "",
     "Owner name": escapeText(project["owner"]?.["name"] || ""),
-    Public: project["public"] || "",
+    "Public": project["public"] || "",
     "Start on": project["start_on"] || "",
     "Due on": project["due_on"] || "",
   };
