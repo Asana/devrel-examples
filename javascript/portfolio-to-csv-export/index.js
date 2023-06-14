@@ -95,7 +95,7 @@ const runExport = async () => {
 
   // Export the data to CSV and download it (see utils.js)
   // Arguments include our list of CSV headers, the consolidated list of projects, and "PortfolioExport" as the file name
-  exportToCsv(csvHeaders, finalProjectList, "PortfolioExport");
+  exportToCsv(csvHeaders, finalProjectList);
 
   // Log and display the finish time to the user
   let duration = new Date() - start;

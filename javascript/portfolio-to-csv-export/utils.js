@@ -116,7 +116,7 @@ async function getAsanaPortfolioItems(portfolio_gid, headers) {
 }
 
 // exportToCsv() exports project content to a CSV file
-function exportToCsv(headers, projects, fileName) {
+function exportToCsv(headers, projects) {
   let csvContent = "";
 
   // Write the header row
