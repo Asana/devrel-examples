@@ -1,23 +1,10 @@
-// postError() displays a red error text box on the page
-function postError(message) {
-  document.getElementById("errorbox").innerText += message;
-  // Allow the user to try re-submitting the form (with modified inputs)
-  document.getElementById("submit").disabled = false;
-  document.getElementById("submit").value = "Generate CSV";
-
-  return;
-}
+/* ########################### Fetching and parsing data ########################### */
 
 // extractProjectsFromPortfolio() returns a list of all projects under that portfolio (including projects in nested portfolios)
 // This is a recursive function that takes in:
 // - A portfolio GID
-// - Any portfolio-level custom fields that should apply to all projects
 // - Default HTTP headers (including authorization)
-async function extractProjectsFromPortfolio(
-  portfolio_gid,
-  presetValues,
-  httpHeaders
-) {
+async function extractProjectsFromPortfolio(portfolio_gid, httpHeaders) {
   let items = [];
 
   // Get all items from the portfolio
@@ -38,25 +25,17 @@ async function extractProjectsFromPortfolio(
   // Iterate through items
   for (let i = 0; i < items.length; i++) {
     let item = items[i];
-    // Get the item's custom fields into a flat object
-    let itemFields = flattenCustomFields(item);
 
     if (item["resource_type"] == "project") {
-      // If the item is a project, flatten/map the standard project fields, add its custom fields, and then add it to our list of projects
+      // If the item is a project, flatten/map the standard project fields, then add it to our list of projects
       let newItem = {
         ...flattenProjectFields(item),
-        ...itemFields,
-        ...presetValues,
       };
       projects.push(newItem);
     } else if (item["resource_type"] == "portfolio") {
       // If the item is a portfolio, run this function recursively
       portfolioPromises.push(
-        extractProjectsFromPortfolio(
-          item["gid"],
-          { ...itemFields, ...presetValues },
-          httpHeaders
-        )
+        extractProjectsFromPortfolio(item["gid"], httpHeaders)
       );
     }
   }
@@ -86,7 +65,7 @@ async function getAsanaPortfolioItems(portfolio_gid, headers) {
     // Get items from the portfolio with the exact fields we want
     // For more information on this API endpoint, see: https://developers.asana.com/reference/getitemsforportfolio
     const resp = await fetch(
-      `https://app.asana.com/api/1.0/portfolios/${portfolio_gid}/items?opt_fields=name,resource_type,archived,color,created_at,current_status_update.(created_by.name|status_type|created_at|text),notes,modified_at,public,owner.name,start_on,due_on,custom_fields.(name|display_value|type|number_value|datetime_value)`,
+      `https://app.asana.com/api/1.0/portfolios/${portfolio_gid}/items?opt_fields=name,resource_type,archived,color,created_at,current_status_update.(created_by.name|status_type|created_at|text),notes,modified_at,public,owner.name,start_on,due_on`,
       headers
     );
 
@@ -114,6 +93,8 @@ async function getAsanaPortfolioItems(portfolio_gid, headers) {
   // Return an empty array by default
   return [];
 }
+
+/* ########################### CSV generation ########################### */
 
 // exportToCsv() exports project content to a CSV file
 function exportToCsv(headers, projects) {
@@ -151,34 +132,33 @@ function exportToCsv(headers, projects) {
   return;
 }
 
-/* ####################### Data formatting ####################### */
+/* ########################### Data formatting ########################### */
 
 // flattenProjectFields() maps and formats API fields to descriptive reporting headers
 function flattenProjectFields(project) {
   newProject = {
     "Project ID": escapeText(project["gid"] || ""),
-    "Name": escapeText(project["name"] || ""),
-    "Notes": escapeText(project["notes"] || ""),
-    "Color": escapeText(project["color"] || ""),
-    "Created at": project["created_at"] || "",
-    "Data archived": project["archived"] || "false",
-    "Current status color":
+    Name: escapeText(project["name"] || ""),
+    Notes: escapeText(project["notes"] || ""),
+    Color: escapeText(project["color"] || ""),
+    "Status color":
       project["current_status_update"]?.["status_type"] in statusTextMap
         ? statusTextMap[project["current_status_update"]?.["status_type"]]
         : "",
-    "Current status created by": escapeText(
-      project["current_status_update"]?.["created_by"]?.["name"] || ""
-    ),
-    "Current status created at":
-      project["current_status_update"]?.["created_at"] || "",
-    "Current status text": escapeText(
+    "Status update": escapeText(
       project["current_status_update"]?.["text"] || ""
     ),
-    "Modified at": project["modified_at"] || "",
+    "Status created by": escapeText(
+      project["current_status_update"]?.["created_by"]?.["name"] || ""
+    ),
+    "Status created at": project["current_status_update"]?.["created_at"] || "",
+    "Project created at": project["created_at"] || "",
+    "Project modified at": project["modified_at"] || "",
     "Owner name": escapeText(project["owner"]?.["name"] || ""),
-    "Public": project["public"] || "",
+    Public: project["public"] || "",
     "Start on": project["start_on"] || "",
     "Due on": project["due_on"] || "",
+    "Data archived": project["archived"] || "false",
   };
 
   return newProject;
@@ -190,37 +170,21 @@ function escapeText(text) {
   return '"' + newText + '"';
 }
 
-// Flatten the API-provided custom fields to a simple key-value store
-function flattenCustomFields(object) {
-  let flattenedFields = {};
+/* ########################### Error handling ########################### */
 
-  if ("custom_fields" in object) {
-    for (let i = 0; i < object["custom_fields"].length; i++) {
-      let field = object["custom_fields"][i];
+// postError() displays a red error text box on the page
+function postError(message) {
+  document.getElementById("errorbox").innerText += message;
+  // Allow the user to try re-submitting the form (with modified inputs)
+  document.getElementById("submit").disabled = false;
+  document.getElementById("submit").value = "Generate CSV";
 
-      // If display_value has a non-empty (i.e., truthy) string value
-      if (!!field["display_value"]) {
-        if (["multi_enum", "enum", "text", "people"].includes(field["type"])) {
-          flattenedFields[field["name"]] = escapeText(
-            field["display_value"] || ""
-          );
-        } else if (field.type == "date") {
-          flattenedFields[field["name"]] = field["display_value"];
-        } else if (field.type == "number") {
-          flattenedFields[field["name"]] = field["number_value"];
-        }
-      } else {
-        flattenedFields[field["name"]] = "";
-      }
-    }
-  }
-
-  return flattenedFields;
+  return;
 }
 
-/* ####################### Maps ####################### */
+/* ########################### Maps ########################### */
 
-// Map API error codes to useful information
+// Maps API error codes to useful information
 const errorCodeMap = {
   400: "Something went wrong with the request. Check your portfolio GID. For more information on portfolios, see: https://developers.asana.com/reference/portfolios",
   401: "You are not authorized to get this portfolio. Check that you pasted your personal access token correctly and that your portfolio GID is correct",
@@ -228,7 +192,7 @@ const errorCodeMap = {
   404: "We couldn't find that portfolio. Check your portfolio GID. For more information on portfolios, see: https://developers.asana.com/reference/portfolios",
 };
 
-// Map project status names to colors
+// Maps project status names to colors
 const statusTextMap = {
   on_track: "green",
   at_risk: "yellow",
