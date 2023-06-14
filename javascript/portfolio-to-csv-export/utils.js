@@ -117,7 +117,7 @@ function exportToCsv(headers, projects) {
   // Join the content to the headers
   csvContent += projectsCsvData;
 
-  // Create the file with the data;
+  // Create the file with the data
   let blob = new Blob([csvContent], { type: "text/csv" });
   let href = window.URL.createObjectURL(blob);
 
@@ -164,7 +164,7 @@ function flattenProjectFields(project) {
   return newProject;
 }
 
-// Wrap text in double quote (") text delimiters and escape any double quotes
+// escapeText() wraps text in double quote (") text delimiters and escapes any double quotes
 function escapeText(text) {
   let newText = text.replace(/"/g, '""');
   return '"' + newText + '"';
