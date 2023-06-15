@@ -56,7 +56,8 @@ async function getAsanaPortfolioItems(portfolio_gid, headers) {
   // While we haven't finished the request, keep trying
   while (retryCounter < maxRetries) {
     // Get items from the portfolio with the exact fields we want
-    // For more information on this API endpoint, see:
+    // For more information on this API endpoint, see: https://developers.asana.com/reference/getitemsforportfolio
+    // For more information on choosing which fields are returned in the response, see: https://developers.asana.com/docs/inputoutput-options
     const resp = await fetch(
       `https://app.asana.com/api/1.0/portfolios/${portfolio_gid}/items?opt_fields=name,resource_type,archived,color,created_at,current_status_update.(created_by.name|status_type|created_at|text),notes,modified_at,public,owner.name,start_on,due_on`,
       headers
