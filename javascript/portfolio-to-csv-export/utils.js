@@ -142,6 +142,7 @@ function flattenProjectFields(project) {
   const newProject = {
     "Project ID": escapeText(project["gid"] || ""),
     Name: escapeText(project["name"] || ""),
+    Link: escapeText(`https://app.asana.com/0/${project["gid"]}/list`),
     Notes: escapeText(project["notes"] || ""),
     Color: escapeText(project["color"] || ""),
     "Status color": getStatusColor(project),
