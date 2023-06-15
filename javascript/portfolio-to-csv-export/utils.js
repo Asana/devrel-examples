@@ -139,27 +139,40 @@ function exportToCsv(headers, projects) {
 
 // flattenProjectFields() maps and formats API fields to descriptive reporting headers
 function flattenProjectFields(project) {
+  const {
+    gid,
+    name,
+    notes,
+    color,
+    current_status_update,
+    created_at,
+    modified_at,
+    owner,
+    public,
+    start_on,
+    due_on,
+    archived,
+  } = project;
+
   const newProject = {
-    "Project ID": escapeText(project["gid"] || ""),
-    Name: escapeText(project["name"] || ""),
-    Link: escapeText(`https://app.asana.com/0/${project["gid"]}/list`),
-    Notes: escapeText(project["notes"] || ""),
-    Color: escapeText(project["color"] || ""),
-    "Status color": getStatusColor(project),
-    "Status update": escapeText(
-      project["current_status_update"]?.["text"] || ""
-    ),
+    "Project ID": escapeText(gid || ""),
+    Name: escapeText(name || ""),
+    Link: escapeText(`https://app.asana.com/0/${gid}/list`),
+    Notes: escapeText(notes || ""),
+    Color: escapeText(color || ""),
+    "Status color": getStatusColor(current_status_update),
+    "Status update": escapeText(current_status_update?.text || ""),
     "Status created by": escapeText(
-      project["current_status_update"]?.["created_by"]?.["name"] || ""
+      current_status_update?.created_by?.name || ""
     ),
-    "Status created at": project["current_status_update"]?.["created_at"] || "",
-    "Project created at": project["created_at"] || "",
-    "Project modified at": project["modified_at"] || "",
-    "Owner name": escapeText(project["owner"]?.["name"] || ""),
-    Public: project["public"] || "",
-    "Start on": project["start_on"] || "",
-    "Due on": project["due_on"] || "",
-    "Data archived": project["archived"] || "false",
+    "Status created at": current_status_update?.created_at || "",
+    "Project created at": created_at || "",
+    "Project modified at": modified_at || "",
+    "Owner name": escapeText(owner?.name || ""),
+    Public: public || "",
+    "Start on": start_on || "",
+    "Due on": due_on || "",
+    "Data archived": archived || "false",
   };
 
   return newProject;
@@ -204,9 +217,9 @@ function escapeText(text) {
 }
 
 // getStatusColor() handles the mapping of status types to colors (i.e., determines the "Status color" field)
-function getStatusColor(project) {
-  const statusType = project["current_status_update"]?.["status_type"];
-  return statusType in statusTextMap ? statusTextMap[statusType] : "";
+function getStatusColor(current_status_update) {
+  const { status_type } = current_status_update || {};
+  return status_type in statusTextMap ? statusTextMap[status_type] : "";
 }
 
 // ================================================
