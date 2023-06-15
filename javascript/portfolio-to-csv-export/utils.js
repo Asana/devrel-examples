@@ -25,7 +25,7 @@ async function extractProjectsFromPortfolio(
       // Get the item's custom fields into a flat object
       let itemFields = flattenCustomFields(item);
 
-      if (item["resource_type"] == "project") {
+      if (item["resource_type"] === "project") {
         // If the item is a project, flatten/map the standard project fields, add its custom fields, and then add it to our list of projects
         let newItem = {
           ...flattenProjectFields(item),
@@ -33,7 +33,7 @@ async function extractProjectsFromPortfolio(
           ...presetValues,
         };
         projects.push(newItem);
-      } else if (item["resource_type"] == "portfolio") {
+      } else if (item["resource_type"] === "portfolio") {
         // If the item is a portfolio, run this function recursively
         portfolioPromises.push(
           extractProjectsFromPortfolio(
