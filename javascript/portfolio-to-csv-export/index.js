@@ -50,6 +50,7 @@ const runExport = async () => {
   // Note that the resulting array may include duplicate projects (e.g., projects in multiple portfolios)
   const projects = await extractProjectsFromPortfolio(
     portfolio_gid,
+    {},
     httpHeaders
   );
 
@@ -78,7 +79,7 @@ const runExport = async () => {
     }
 
     for (const property in project) {
-      // Add all properties to our set of headers
+      // Add all properties (including custom fields) to our set of headers
       // Such properties include Project ID, Project name, etc.
       headerSet.add(property);
     }
