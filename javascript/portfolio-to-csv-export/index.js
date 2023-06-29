@@ -59,7 +59,6 @@ const runExport = async () => {
   const headerSet = new Set();
 
   // Create a consolidated list of all projects
-  // finalProjects itself is an object in which project IDs (keys) are mapped to project objects (values)
   const finalProjects = {};
 
   // Iterate through all projects
@@ -86,7 +85,7 @@ const runExport = async () => {
   }
 
   // Get the consolidated list of projects
-  // This is an array of objects, each representing a project
+  // finalProjects itself is an object in which project IDs (keys) are mapped to project objects (values)
   const finalProjectList = Object.values(finalProjects);
 
   // Create the list of headers
