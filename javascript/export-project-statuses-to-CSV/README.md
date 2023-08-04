@@ -6,7 +6,7 @@ The Portfolio Status Updates application is used to extract [status updates](htt
 
 ![Sample CSV output](./images/CSVsample.png "CSV generated from the application")
 
-➡️ [View the documentation](https://developers.asana.com/docs) for this application, which includes a step-by-step tutorial.
+➡️ [View the documentation](https://developers.asana.com/docs/export-project-statuses-to-csv) for this application, which includes a step-by-step tutorial.
 
 ## Requirements
 
