@@ -37,8 +37,9 @@ npm run dev
 
 2. Create a webhook by calling [POST /webhooks](https://developers.asana.com/docs/establish-a-webhook) and specifying given resource (e.g., a task). Feel free to use the [Postman Collection](https://developers.asana.com/docs/using-postman) to make your request.
 
-Note: You must point the [target](https://developers.asana.com/docs/webhook) request parameter to your public ngrok domain instead of the example local host domain `http://localhost:8000/receiveWebhook` (i.e., replace localhost:8000 with your unique ngrok domain). The target will be your ngrok server's "Forwarding" domain appended with `/receiveWebhook` and will look something like `https://0d32-71-236-53-92.ngrok-free.app/receiveWebhook`).
+    * Note:  You must point the [target](https://developers.asana.com/docs/webhook) request parameter to your public ngrok domain instead of the example local host domain `http://localhost:8000/receiveWebhook` (i.e., replace `localhost:8000` with your unique ngrok domain). 
+    * The target will be your ngrok server's "Forwarding" domain appended with `/receiveWebhook` and will look something like:  `https://0d32-71-236-53-92.ngrok-free.app/receiveWebhook`).
 
 3. In the Asana UI (or via the API), update the resource (e.g., change the task name).
 
-4. View the console for notifications of your recent changes on that resource!
+4. View the ngrok server in the console for notifications of your recent changes on that resource! You can also go to your ngrok server's "Web Interface" URL to see the events notifications in a GUI format.
