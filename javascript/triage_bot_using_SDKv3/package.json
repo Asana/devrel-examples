@@ -1,0 +1,19 @@
+{
+  "name": "triage_bot_using_sdkv3",
+  "version": "2.0.0",
+  "description": "Script to pull incomplete and unassinged tasks from a poject and randomly assign them to a user from a specified group of people.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "asana",
+    "node example",
+    "asana example"
+  ],
+  "author": "Jeff Schneider",
+  "license": "MIT",
+  "dependencies": {
+    "asana": "^3.0.1"
+  }
+}
