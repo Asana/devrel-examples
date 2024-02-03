@@ -21,7 +21,7 @@ const filterDefs = {
     key: 'assignee',
     value: null,
     matchesTask: function(task) {
-      return task.assignee && task.assignee.name.includes(this.value);
+      return task.assignee && task.assignee.name && task.assignee.name.includes(this.value);
     }
   },
   completed: {
