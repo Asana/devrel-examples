@@ -76,7 +76,7 @@ const run = async () => {
     const tasks = await taskProvider.getTaskRefs(tasksApiInstance, projectId);
 
     for(let task of tasks.data) { 
-      if (filters.some(filter => !filter.matchesTask(task))) return;
+      if (filters.some(filter => !filter.matchesTask(task))) continue;
       await commandRunner.runCommand(tasksApiInstance, storiesApiInstance, command, task, argv);
     }   
 
