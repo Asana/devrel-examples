@@ -27,14 +27,12 @@ const filterDefs = {
   completed: {
     key: 'completed',
     matchesTask: function(task) {
-      console.log("matched complete");
       return task.completed == true;
     }
   },
   incomplete: {
     key: 'incomplete',
     matchesTask: function(task) {
-      console.log("matched incomplete");
       return task.completed == false;
     }
   },
