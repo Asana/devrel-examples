@@ -6,7 +6,11 @@ This demonstrates how to use Asana's node.js SDK with OAuth using the popular [p
 
 1. Follow these instructions to [register an Asana application](https://developers.asana.com/docs/oauth#register-an-application)
 	1. In step 2, add `http://localhost:3000/auth/asana/callback` as a **Redirect URI**
-2. Copy and paste the client id and client secret values into the .env file
+2. Copy and paste the client id and client secret values into the .env file. For example:
+```
+CLIENT_ID=12345616177200
+CLIENT_SECRET=42d6f72eosb8secret66af5a7b431d0
+```
 3. Run
 ```
 npm install

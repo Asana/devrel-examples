@@ -36,9 +36,11 @@ passport.use(
   ),
 );
 
-app.use(session({ secret: "meow mix" }));
+app.use(session({ secret: "d00dc3df-5325-430a-9794-c2754c571d1a",
+                  saveUninitialized: true,
+                  resave: true}));
 
-// Initialize Passport!  Also use passport.session() middleware, to support
+// Initialize Passport! Also use passport.session() middleware, to support
 // persistent login sessions (recommended).
 app.use(passport.initialize());
 app.use(passport.session());
