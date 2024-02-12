@@ -1,7 +1,7 @@
 const getTaskRefs = async (tasksApiInstance, projectId) => {
   console.log('Retrieving all task references for project', projectId);
   let opts = {
-    opt_fields: 'name,assignee,completed,resource_type,resource_subtype'
+    opt_fields: 'name,assignee.name,completed,resource_type,resource_subtype,notes'
   };
   // getTasksForProject() only works for pojects with less than 1000 tasks.
   // Use pagination if your project has more than 1000 tasks. To do so,
