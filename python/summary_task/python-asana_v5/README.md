@@ -65,19 +65,19 @@ pip install "asana~=5.0.6" "requests-oauthlib~=2.0.0"
 ### 2: Create and Configure Asana App
 
 1. Navigate to the [Asana Developer Console](https://app.asana.com/0/my-apps) and create an application
-![Create an app in Asana](images/create_app.png)
+![Create an app in Asana](../images/create_app.png)
 
 2. Navigate to the **"OAuth"** page from your app settings page and check the **"This is a native or command-line app"** checkbox
-![Enable command line app in app settings](images/enable_command_line_app_settings.png)
+![Enable command line app in app settings](../images/enable_command_line_app_settings.png)
 
 3. Navigate to the **"Manage distribution"** page from your app settings page and choose a distribution method. **NOTE:** if you choose the **"Specific workspaces"** option, make sure that you select the workspace you plan on running this script on.
-![Choose a distribution method](images/manage_app_distribution.png)
+![Choose a distribution method](../images/manage_app_distribution.png)
 
 ### 3: Set up environment variables
 
 Navigate to the [Asana Developer Console](https://app.asana.com/0/my-apps) and select your application. Copy the `Client ID` and `Client secret` and set them as environment variables in your shell.
 
-![Asana app settings page](images/app_settings_page.png)
+![Asana app settings page](../images/app_settings_page.png)
 
 ```
 export ASANA_CLIENT_ID=<YOUR_ASANA_APP_CLIENT_ID>
@@ -94,7 +94,7 @@ export ASANA_CLIENT_SECRET=<YOUR_ASANA_APP_CLIENT_SECRET>
 1. Run the script. EX: `python summary_task.py 1201144251111293 1202777375159385`
 2. If this is your first time running the script, the script will take you to the Asana **"Grant Permission"** page where you need to click on the **"Allow"** button to authorize the app.
 3. You will be presented with a page with a code. Copy this code.
-![Code screen](images/code_screen.png)
+![Code screen](../images/code_screen.png)
 4. Paste the code into your running application and hit enter on your keyboard
-![Paste code into running application](images/paste_code.png)
+![Paste code into running application](../images/paste_code.png)
 5. Check your summary project (e.g., from our example run, this is project: `1201144251111293`) and see the summary task(s) that was created

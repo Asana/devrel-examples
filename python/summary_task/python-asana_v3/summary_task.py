@@ -137,8 +137,9 @@ def make_item_description(description, numerator, denominator):
     Makes an item description giving a number and a percentage based on the
     given numerator and denominator.
     """
+    percentage = numerator / denominator if denominator != 0 else 0
     return "<b>{} ({:.0%})</b> {}\n".format(
-        numerator, numerator / denominator, description)
+        numerator, percentage, description)
 
 def make_description(data):
     """
