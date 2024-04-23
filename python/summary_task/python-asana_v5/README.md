@@ -1,6 +1,17 @@
 # Summary Task
 This is an example of retrieving tasks from a project and creating a task.
 
+```
+usage: summary_task.py [-h] summary_project_id project_id [project_id ...]
+
+positional arguments:
+  summary_project_id  project id of project to post summary task to
+  project_id          project id of project to summarize
+
+optional arguments:
+  -h, --help          show this help message and exit
+```
+
 For each `project_id`, the script will create a "summary" task in the 
 `summary_project_id` containing aggregate data about the summary. 
 This data includes:
@@ -77,17 +88,6 @@ export ASANA_CLIENT_SECRET=<YOUR_ASANA_APP_CLIENT_SECRET>
 
 
 ## Usage
-
-```
-usage: summary_task.py [-h] summary_project_id project_id [project_id ...]
-
-positional arguments:
-  summary_project_id  project id of project to post summary task to
-  project_id          project id of project to summarize
-
-optional arguments:
-  -h, --help          show this help message and exit
-```
 
 ### Steps:
 
