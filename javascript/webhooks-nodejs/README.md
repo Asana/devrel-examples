@@ -34,7 +34,7 @@ Ngrok is used to create a publicly accessible "tunnel" (i.e., URL) to a port on 
 X_HOOK_SECRET=
 ```
 
-This file stores the `X-Hook-Secret` obtained from the [webhook handshake](https://developers.asana.com/docs/webhooks-guide#the-webhook-handshake). In a production environment, this value should be securely persisted in a database. For security reasons, ensure that you never commit or expose this value in a public environment.
+The Express server writes the `X-Hook-Secret` obtained from the [webhook handshake](https://developers.asana.com/docs/webhooks-guide#the-webhook-handshake) directly into this file, allowing the `X-Hook-Secret` to persist locally across server restarts. In a production environment, this value should be securely stored in a database. For security reasons, ensure that you never commit or expose this value in a public environment.
 
 For your convenience, a sample **.env.template** file is included in the root directory of this application.
 
