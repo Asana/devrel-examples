@@ -26,7 +26,7 @@ app.post("/receiveWebhook", (req, res) => {
       `The X-Hook-Secret stored by this server is: ${process.env.X_HOOK_SECRET}`
     );
 
-    // Write the X-Hook-Secret to the .env file
+    // Write the X-Hook-Secret to the .env file (in a production setting, this value should be securely persisted to a database)
     let envContent = fs.readFileSync(envFilePath, "utf8");
     envContent = envContent.replace(
       /X_HOOK_SECRET=.*/,
