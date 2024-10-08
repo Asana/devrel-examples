@@ -1,27 +1,47 @@
 const express = require("express");
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
+require("dotenv").config();
 
-// Initializes Express app.
+// Initializes Express app
 const app = express();
 
-// Parses JSON bodies.
+// Parses JSON bodies
 app.use(express.json());
 
-// Global variable to store the x-hook-secret
-// Read more about the webhook "handshake" here: https://developers.asana.com/docs/webhooks-guide#the-webhook-handshake
-let secret = "";
+// File path for the .env file (where the value for X-Hook-Secret is stored)
+const envFilePath = path.join(__dirname, ".env");
+
+// Helper function to read the X-Hook-Secret from the .env file
+function getXHookSecret() {
+  const envContent = fs.readFileSync(envFilePath, "utf8");
+  const match = envContent.match(/X_HOOK_SECRET=(.*)/);
+  return match ? match[1] : "";
+}
 
 // Local endpoint for receiving events
 app.post("/receiveWebhook", (req, res) => {
   if (req.headers["x-hook-secret"]) {
     console.log("This is a new webhook");
-    secret = req.headers["x-hook-secret"];
+    const newSecret = req.headers["x-hook-secret"];
 
-    res.setHeader("X-Hook-Secret", secret);
+    // Update the X-Hook-Secret in the .env file (in a production setting, this value should be securely stored in a database)
+    let envContent = fs.readFileSync(envFilePath, "utf8");
+    envContent = envContent.replace(
+      /X_HOOK_SECRET=.*/,
+      `X_HOOK_SECRET=${newSecret}`
+    );
+    fs.writeFileSync(envFilePath, envContent);
+
+    console.log(`The X-Hook-Secret stored in .env is: ${newSecret}`);
+
+    res.setHeader("X-Hook-Secret", newSecret);
     res.sendStatus(200);
   } else if (req.headers["x-hook-signature"]) {
+    const storedSecret = getXHookSecret();
     const computedSignature = crypto
-      .createHmac("SHA256", secret)
+      .createHmac("SHA256", storedSecret)
       .update(JSON.stringify(req.body))
       .digest("hex");
 
@@ -45,5 +65,5 @@ app.post("/receiveWebhook", (req, res) => {
 });
 
 app.listen(8080, () => {
-  console.log(`Server started on port 8080`);
+  console.log("Server started on port 8080");
 });
