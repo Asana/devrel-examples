@@ -4,14 +4,21 @@ const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
 
-// Initializes Express app.
+// Initializes Express app
 const app = express();
 
-// Parses JSON bodies.
+// Parses JSON bodies
 app.use(express.json());
 
 // File path for the .env file (where the value for X-Hook-Secret is stored)
 const envFilePath = path.join(__dirname, ".env");
+
+// Helper function to read the X-Hook-Secret from the .env file
+function getXHookSecret() {
+  const envContent = fs.readFileSync(envFilePath, "utf8");
+  const match = envContent.match(/X_HOOK_SECRET=(.*)/);
+  return match ? match[1] : "";
+}
 
 // Local endpoint for receiving events
 app.post("/receiveWebhook", (req, res) => {
@@ -19,14 +26,7 @@ app.post("/receiveWebhook", (req, res) => {
     console.log("This is a new webhook");
     const newSecret = req.headers["x-hook-secret"];
 
-    // Environment variable to store the X-Hook-Secret
-    // Read more about the webhook "handshake" here: https://developers.asana.com/docs/webhooks-guide#the-webhook-handshake
-    process.env.X_HOOK_SECRET = newSecret;
-    console.log(
-      `The X-Hook-Secret stored by this server is: ${process.env.X_HOOK_SECRET}`
-    );
-
-    // Write the X-Hook-Secret to the .env file (in a production setting, this value should be securely persisted to a database)
+    // Update the X-Hook-Secret in the .env file (in a production setting, this value should be securely stored in a database)
     let envContent = fs.readFileSync(envFilePath, "utf8");
     envContent = envContent.replace(
       /X_HOOK_SECRET=.*/,
@@ -34,11 +34,14 @@ app.post("/receiveWebhook", (req, res) => {
     );
     fs.writeFileSync(envFilePath, envContent);
 
-    res.setHeader("X-Hook-Secret", process.env.X_HOOK_SECRET);
+    console.log(`The X-Hook-Secret stored in .env is: ${newSecret}`);
+
+    res.setHeader("X-Hook-Secret", newSecret);
     res.sendStatus(200);
   } else if (req.headers["x-hook-signature"]) {
+    const storedSecret = getXHookSecret();
     const computedSignature = crypto
-      .createHmac("SHA256", process.env.X_HOOK_SECRET)
+      .createHmac("SHA256", storedSecret)
       .update(JSON.stringify(req.body))
       .digest("hex");
 
