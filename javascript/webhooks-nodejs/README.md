@@ -28,17 +28,20 @@ Ngrok is used to create a publicly accessible "tunnel" (i.e., URL) to a port on 
 
 ## Usage
 
-1. Create a file named **.env** in the root directory of this app. In the file, include the following line:
+After ngrok is successfully running, the next steps are to run the server (**index.js**), then establish a webhook using the provided webhook setup script (**createWebhook.js**).
+
+1. Create a file named **.env** in the root directory of this app. In the file, include the following lines:
 
 ```
 X_HOOK_SECRET=
+PAT=
 ```
 
-The Express server writes the `X-Hook-Secret` obtained from the [webhook handshake](https://developers.asana.com/docs/webhooks-guide#the-webhook-handshake) directly into this local file, allowing the `X-Hook-Secret` to persist across server restarts. As such, this server is designed to handle a single `X_HOOK_SECRET`, which is associated with a single webhook.
+You do not need to manually supply a value for `X_HOOK_SECRET`. The Express server writes the `X-Hook-Secret` obtained from the [webhook handshake](https://developers.asana.com/docs/webhooks-guide#the-webhook-handshake) directly into this local file, allowing the `X-Hook-Secret` to persist across server restarts. As such, this server is designed to handle a single `X_HOOK_SECRET`, which is associated with a single webhook.
 
 > **Note:** In a production environment, this value should be securely stored in a database. For security reasons, ensure that you never commit or expose this value in a public repository.
 
-For your convenience, a sample **.env.template** file is included in the root directory of this application.
+Enter your [personal access token](https://developers.asana.com/docs/personal-access-token) for `PAT`. For your convenience, a sample **.env.template** file is included in the root directory of this application.
 
 2. Start the webhook server:
 
@@ -46,13 +49,26 @@ For your convenience, a sample **.env.template** file is included in the root di
 npm run dev
 ```
 
-3. Create a webhook by calling `POST /webhooks` and specifying given resource (e.g., a task). Feel free to use the [Postman Collection](https://developers.asana.com/docs/using-postman) or the [POST /webhooks](https://developers.asana.com/reference/createwebhook) page in the API Explorer to make your request.
+3. Edit the **createWebhook.js** setup script to include details for your [POST /webhooks](https://developers.asana.com/reference/createwebhook) request:
 
-> **Note:** In your request, make sure to set the [`target`](https://developers.asana.com/docs/webhook) parameter to your public ngrok domain instead of the example `localhost` domain, `http://localhost:8000/receiveWebhook`. This means you must replace `localhost:8000` with your unique ngrok domain. The `target` should be your ngrok server's "Forwarding" domain followed by `/receiveWebhook`. 
+```js
+// TODO: Replace these values with your target URI, object ID, filter, and resource type
+const targetUri = "https://your.url.here/receiveWebhook"; // The webhook server's public endpoint for receiving webhooks
+const objectId = "TASK_ID_HERE"; // The Asana object ID you want to track
+const filter = "changed"; // The action to filter for
+const resourceType = "task"; // Specify the resource type (e.g., task, project)
+```
+
+> **Note:** Make sure to set [`targetUri`](https://developers.asana.com/docs/webhook) parameter to your public ngrok domain instead of a `localhost` domain, such as `http://localhost:8000/receiveWebhook`. This means you must replace `localhost:8000` with your unique ngrok domain. The target URI should be your ngrok server's "Forwarding" domain followed by `/receiveWebhook`. 
 > 
-> The final value for `target` will look something like this: `https://0d32-71-236-53-92.ngrok-free.app/receiveWebhook`.
+> The final value for your target URI will look something like this: `https://0d32-71-236-53-92.ngrok-free.app/receiveWebhook`.
 
+4. Run the setup script to establish the webhook:
 
-4. In the Asana UI (or via the API), update the resource (e.g., change the task name).
+```
+node createWebhook.js
+```
 
-5. View the ngrok server in the console for notifications of your recent changes on that resource! You can also go to your ngrok server's "Web Interface" URL to see the events notifications in a GUI format.
+5. In the Asana UI (or via the API), update the resource (e.g., change the task name).
+
+6. The Express server will output webook event notifications in the console about your changes to that resource!
