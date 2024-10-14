@@ -26,6 +26,12 @@ https://ngrok.com/docs/getting-started/
 
 Ngrok is used to create a publicly accessible "tunnel" (i.e., URL) to a port on your local machine. By default, the Express server in this demo runs on port `8080`, so ensure that ngrok is set up to tunnel to the correct port where your server is running.
 
+For example: Using the default settings, then, you can run ngrok on your local machine with the following command:
+
+```
+ngrok http 8080
+```
+
 ## Usage
 
 After ngrok is successfully running, the next steps are to run the server (**index.js**), then establish a webhook using the provided webhook setup script (**createWebhook.js**).
