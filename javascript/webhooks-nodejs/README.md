@@ -59,9 +59,9 @@ npm run dev
 
 ```js
 // TODO: Replace these values with your target URI, object ID, filter, and resource type
-const targetUri = "https://<YOUR_URL_HERE/receiveWebhook"; // The webhook server's public endpoint for receiving webhooks
-const objectId = "<OBJECT_ID_HERE"; // The Asana object ID you want to track
-const filter = "changed"; // The action to filter for
+const targetUri = "<YOUR_URL_HERE>/receiveWebhook"; // The webhook server's public endpoint for receiving webhooks (view README for an example)
+const objectId = "<OBJECT_ID_HERE>"; // The Asana object ID you want to track (e.g., a task gid)
+const filter = "changed"; // The action to filter for (documentation: https://developers.asana.com/docs/webhooks-guide#actions)
 const resourceType = "task"; // Specify the resource type (e.g., task, project)
 ```
 
