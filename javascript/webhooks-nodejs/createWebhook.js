@@ -1,6 +1,6 @@
 const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 require("dotenv").config();
 
 // File path for the .env file
@@ -82,10 +82,10 @@ async function createWebhook(targetUri, objectId, filter, resourceType) {
     }
 
     updateXHookSecret(xHookSecret);
+    console.log("Webhook created successfully!");
     console.log(
-      "Webhook created successfully!"
+      `The GID of the newly-created webhook is: ${response.data.data.gid}.`
     );
-    console.log(`The GID of the newly-created webhook is: ${response.data.data.gid}.`);
     console.log(
       `The X-Hook-Secret from Asana's '201 Created' response is: ${xHookSecret}.`
     );
