@@ -70,7 +70,8 @@ async function createWebhook(targetUri, objectId, filter, resourceType) {
     const xHookSecret = response.data["X-Hook-Secret"];
     const storedSecret = getXHookSecret();
 
-    // Compare the secrets. This check is not solely for detecting mutations in the stored secret; rather, it ensures that the original secret was valid and corresponds to what Asana expects
+    // Compare the secrets. This check is not solely for detecting mutations in the stored secret.
+    // Rather, it ensures that the original secret was valid and corresponds to what Asana expects.
     // Read more about validation during the webhook handshake: https://developers.asana.com/docs/webhooks-guide#the-webhook-handshake
     if (xHookSecret !== storedSecret) {
       console.error(
