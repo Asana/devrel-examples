@@ -14,7 +14,7 @@ function updateXHookSecret(newSecret) {
     `X_HOOK_SECRET=${newSecret}`
   );
   fs.writeFileSync(envFilePath, envContent);
-  console.log(`The X-Hook-Secret stored in .env is: ${newSecret}`);
+  console.log(`The X-Hook-Secret stored in .env is: ${newSecret}.`);
 }
 
 // Helper function to read X-Hook-Secret from the .env file
@@ -74,7 +74,7 @@ async function createWebhook(targetUri, objectId, filter, resourceType) {
     // Read more about validation during the webhook handshake: https://developers.asana.com/docs/webhooks-guide#the-webhook-handshake
     if (xHookSecret !== storedSecret) {
       console.error(
-        `X-Hook-Secrets do not match! Potential security issue. Deleting webhook with ID ${response.data.data.gid}`
+        `X-Hook-Secrets do not match! Potential security issue. Deleting webhook with GID ${response.data.data.gid}.`
       );
       // Delete the webhook if the secrets don't match
       await deleteWebhook(response.data.data.gid, personalAccessToken);
@@ -83,7 +83,11 @@ async function createWebhook(targetUri, objectId, filter, resourceType) {
 
     updateXHookSecret(xHookSecret);
     console.log(
-      `Webhook created successfully! The X-Hook-Secret from Asana's 201 response was: ${xHookSecret}`
+      "Webhook created successfully!"
+    );
+    console.log(`The GID of the newly-created webhook is: ${response.data.data.gid}.`);
+    console.log(
+      `The X-Hook-Secret from Asana's '201 Created' response is: ${xHookSecret}.`
     );
   } catch (error) {
     console.error(
@@ -94,9 +98,9 @@ async function createWebhook(targetUri, objectId, filter, resourceType) {
 }
 
 // TODO: Replace these values with your target URI, object ID, filter, and resource type
-const targetUri = "https://<YOUR_URL_HERE>/receiveWebhook"; // The webhook server's public endpoint for receiving webhooks
+const targetUri = "<YOUR_URL_HERE>/receiveWebhook"; // The webhook server's public endpoint for receiving webhooks (view README for an example)
 const objectId = "OBJECT_ID_HERE"; // The Asana object ID you want to track (e.g., a task gid)
-const filter = "changed"; // The action to filter for
+const filter = "changed"; // The action to filter for (documentation: https://developers.asana.com/docs/webhooks-guide#actions)
 const resourceType = "task"; // Specify the resource type (e.g., task, project)
 
 createWebhook(targetUri, objectId, filter, resourceType);
