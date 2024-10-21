@@ -1,20 +1,31 @@
-import os
 import asana
+from asana.rest import ApiException
 
-# replace with your personal access token.
+# Configure the API client
+configuration = asana.Configuration()
+# Add your PAT below
+# Documentation: https://developers.asana.com/docs/personal-access-token)
+configuration.access_token = '<PERSONAL_ACCESS_TOKEN>'
+api_client = asana.ApiClient(configuration)
 
-# Check and set our environment variables
-personal_access_token = None
-if 'ASANA_PAT' in os.environ:
-    personal_access_token = os.environ['ASANA_PAT']
-else:
-    print "No value for PAT in your console environment"
-    print "Try running this as `ASANA_PAT=0/1234567890abcdef... python hello_world.py`"
-    quit()
+# Create an instance of the API class
+users_api_instance = asana.UsersApi(api_client)
+# Identifies the user (can be "me" or the gid of a user)
+user_gid = "me"
 
-client = asana.Client.access_token(personal_access_token)
+# Options for the API call
+# Documentation: https://developers.asana.com/docs/inputoutput-options
+opts = {
+    'opt_fields': "name"
+}
 
-me = client.users.me()
+try:
+    # Get a user
+    # Documentation: https://developers.asana.com/reference/getuser
+    api_response = users_api_instance.get_user(user_gid, opts)
+    
+    # Print the user's name
+    print(f"Hello world! My name is {api_response['name']}")
 
-print "Hello world! " + "My name is " + me['name'] + "."
-
+except ApiException as e:
+    print(f"Exception when calling UsersApi->get_user: {e}\n")
