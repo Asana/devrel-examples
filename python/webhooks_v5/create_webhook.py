@@ -27,7 +27,7 @@ def update_x_hook_secret(new_secret):
             else:
                 file.write(line)
     
-    print(f'The X-Hook-Secret stored in .env is: {new_secret}.')
+    print(f'The X-Hook-Secret stored in .env is: {new_secret}')
 
 # Helper function to read X-Hook-Secret from the .env file
 def get_x_hook_secret():
@@ -61,29 +61,32 @@ def create_webhook(target_uri, object_id, filter, resource_type):
     try:
         # Establish a webhook
         # Documentation: https://developers.asana.com/reference/createwebhook
-        api_response = webhooks_api_instance.create_webhook(body, opts)
-        
+        # Note: This request disables default pagination behavior
+        # (see https://github.com/Asana/python-asana?tab=readme-ov-file#disabling-default-pagination-behaviour)
+        api_response = webhooks_api_instance.create_webhook(body, opts, full_payload=True)
+
+        print("The complete API response for POST /webhooks is below:")
         pprint(api_response)
 
-        x_hook_secret = api_response.get('X-Hook-Secret')  # TODO: Get X-Hook-Secret from Asana's 201 response (this currently doesn't work)
-        print(x_hook_secret)
+        webhook_gid = api_response["data"]["gid"]
+        
+        x_hook_secret = api_response.get('X-Hook-Secret')
         stored_secret = get_x_hook_secret()
-        print(stored_secret)
 
         if x_hook_secret != stored_secret:
-            print(f'X-Hook-Secrets do not match! Deleting webhook with GID {api_response["gid"]}.')
-            # delete_webhook(api_response["gid"]) # TODO: Comment this back in later on
+            print(f'X-Hook-Secrets do not match! Deleting webhook with GID {webhook_gid}')
+            delete_webhook(api_response["data"]["gid"])
         else:
             update_x_hook_secret(x_hook_secret)
             print("Webhook created successfully!")
-            print(f'The GID of the newly-created webhook is: {api_response["gid"]}.')
-            print(f'The X-Hook-Secret from Asana\'s response is: {x_hook_secret}.')
+            print(f'The GID of the newly-created webhook is: {webhook_gid}')
+            print(f'The X-Hook-Secret from Asana\'s response is: {x_hook_secret}')
 
     except ApiException as e:
         print(f"Exception when calling WebhooksApi->create_webhook: {e}\n")
 
-# Replace these values with your target URI, object ID, filter, and resource type
-target_uri = '<YOUR_URL_HERE>'  # The webhook server's public endpoint
+# TODO: Replace these values with your target URI, object ID, filter, and resource type
+target_uri = '<YOUR_URL_HERE>/receive_webhook'  # The webhook server's public endpoint
 object_id = '<OBJECT_ID_HERE>'  # The Asana object ID you want to track (e.g., a task gid)
 filter = 'changed'  # The action to filter for
 resource_type = 'task'  # Specify the resource type

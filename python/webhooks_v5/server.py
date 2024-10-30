@@ -4,6 +4,7 @@ import hashlib
 import datetime
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
+from pprint import pprint
 
 load_dotenv()
 
@@ -20,7 +21,7 @@ def get_x_hook_secret():
 # Local endpoint for receiving events
 @app.route('/receive_webhook', methods=['POST'])
 def receive_webhook():
-    print("Headers received:", request.headers)  # Log received headers
+    print("Headers received:", request.headers)
     
     if 'X-Hook-Secret' in request.headers:
         new_secret = request.headers['X-Hook-Secret']
@@ -43,7 +44,7 @@ def receive_webhook():
             return '', 401 # Fail
         else:
             print(f'Events on {datetime.datetime.now()}:')
-            print(request.json['events'])
+            pprint(request.json['events'])
             return '', 200 # Success
 
     else:
