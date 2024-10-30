@@ -4,7 +4,7 @@ from asana.rest import ApiException
 from dotenv import load_dotenv
 from pprint import pprint
 
-# Load environment variables
+# Load environment variables (for stored PAT and X-Hook-Secret)
 load_dotenv()
 
 # Configure Asana client
@@ -56,6 +56,7 @@ def create_webhook(target_uri, object_id, filter, resource_type):
         }
     }
 
+    # Documentation: https://developers.asana.com/docs/inputoutput-options
     opts = {}
 
     try:
