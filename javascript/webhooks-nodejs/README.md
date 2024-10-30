@@ -65,7 +65,7 @@ const filter = "changed"; // The action to filter for (documentation: https://de
 const resourceType = "task"; // Specify the resource type (e.g., task, project)
 ```
 
-> **Note:** Make sure to set [`targetUri`](https://developers.asana.com/docs/webhook) parameter to your public ngrok domain instead of a `localhost` domain, such as `http://localhost:8000/receiveWebhook`. This means you must replace `localhost:8000` with your unique ngrok domain. The target URI should be your ngrok server's "Forwarding" domain followed by `/receiveWebhook`. 
+> **Note:** Make sure to set the [`targetUri`](https://developers.asana.com/docs/webhook) parameter to your public ngrok domain instead of a `localhost` domain, such as `http://localhost:8000/receiveWebhook`. This means you must replace `localhost:8000` with your unique ngrok domain. The target URI should be your ngrok server's "Forwarding" domain followed by `/receiveWebhook`. 
 > 
 > The final value for your target URI will look something like this: `https://0d32-71-236-53-92.ngrok-free.app/receiveWebhook`.
 
