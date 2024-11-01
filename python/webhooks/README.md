@@ -1,3 +1,5 @@
+> Note: This legacy app is no longer supported. Please access the [webhooks_v5](https://github.com/Asana/devrel-examples/tree/master/python/webhooks_v5) directory for the most up-to-date webhooks app.
+
 # Webhook Inspector
 
 Here is an example that demonstrates the features of [Asana webhooks](https://developers.asana.com/docs/webhooks) and how to properly set them up and receive them. All this script does is to create a webhook and log to your terminal window the contents of webhooks that it receives.
