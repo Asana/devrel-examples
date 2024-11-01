@@ -1,4 +1,4 @@
-> Note: This legacy app is no longer supported. Please access the **webhooks_v5** directory for the most up-to-date webhooks app.
+> Note: This legacy app is no longer supported. Please access the [webhooks_v5](https://github.com/Asana/devrel-examples/tree/master/python/webhooks_v5) directory for the most up-to-date webhooks app.
 
 # Webhook Inspector
 
