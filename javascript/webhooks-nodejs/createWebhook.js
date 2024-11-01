@@ -6,17 +6,6 @@ require("dotenv").config();
 // File path for the .env file
 const envFilePath = path.join(__dirname, ".env");
 
-// Helper function to update the X-Hook-Secret in the .env file
-function updateXHookSecret(newSecret) {
-  let envContent = fs.readFileSync(envFilePath, "utf8");
-  envContent = envContent.replace(
-    /X_HOOK_SECRET=.*/,
-    `X_HOOK_SECRET=${newSecret}`
-  );
-  fs.writeFileSync(envFilePath, envContent);
-  console.log(`The X-Hook-Secret stored in .env is: ${newSecret}.`);
-}
-
 // Helper function to read X-Hook-Secret from the .env file
 function getXHookSecret() {
   const envContent = fs.readFileSync(envFilePath, "utf8");
@@ -82,7 +71,6 @@ async function createWebhook(targetUri, objectId, filter, resourceType) {
       return;
     }
 
-    updateXHookSecret(xHookSecret);
     console.log("Webhook created successfully!");
     console.log(
       `The GID of the newly-created webhook is: ${response.data.data.gid}.`
