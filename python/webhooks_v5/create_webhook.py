@@ -15,20 +15,6 @@ api_client = asana.ApiClient(configuration)
 # Create an instance of the Webhooks API
 webhooks_api_instance = asana.WebhooksApi(api_client)
 
-# Helper function to update the X-Hook-Secret in the .env file
-def update_x_hook_secret(new_secret):
-    with open('.env', 'r') as file:
-        content = file.readlines()
-    
-    with open('.env', 'w') as file:
-        for line in content:
-            if line.startswith('X_HOOK_SECRET='):
-                file.write(f'X_HOOK_SECRET={new_secret}\n')
-            else:
-                file.write(line)
-    
-    print(f'The X-Hook-Secret stored in .env is: {new_secret}')
-
 # Helper function to read X-Hook-Secret from the .env file
 def get_x_hook_secret():
     with open('.env', 'r') as file:
@@ -38,7 +24,7 @@ def get_x_hook_secret():
     return ""
 
 # Function to delete the webhook
-# Documentation: https://developers.asana.com/reference/deletewebhook
+# Documentation: https://github.com/Asana/python-asana/blob/v5.0.11/docs/WebhooksApi.md#delete_webhook
 def delete_webhook(webhook_gid):
     try:
         api_response = webhooks_api_instance.delete_webhook(webhook_gid)
@@ -47,6 +33,7 @@ def delete_webhook(webhook_gid):
         print(f"Exception when calling WebhooksApi->delete_webhook: {e}\n")
 
 # Function to create the webhook
+# Documentation: https://github.com/Asana/python-asana/blob/v5.0.11/docs/WebhooksApi.md#create_webhook
 def create_webhook(target_uri, object_id, filter, resource_type):
     body = {
         "data": {
@@ -61,7 +48,6 @@ def create_webhook(target_uri, object_id, filter, resource_type):
 
     try:
         # Establish a webhook
-        # Documentation: https://developers.asana.com/reference/createwebhook
         # Note: This request disables default pagination behavior
         # (see https://github.com/Asana/python-asana?tab=readme-ov-file#disabling-default-pagination-behaviour)
         api_response = webhooks_api_instance.create_webhook(body, opts, full_payload=True)
@@ -78,7 +64,6 @@ def create_webhook(target_uri, object_id, filter, resource_type):
             print(f'X-Hook-Secrets do not match! Deleting webhook with GID {webhook_gid}')
             delete_webhook(api_response["data"]["gid"])
         else:
-            update_x_hook_secret(x_hook_secret)
             print("Webhook created successfully!")
             print(f'The GID of the newly-created webhook is: {webhook_gid}')
             print(f'The X-Hook-Secret from Asana\'s response is: {x_hook_secret}')
