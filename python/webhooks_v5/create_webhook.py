@@ -27,7 +27,7 @@ def get_x_hook_secret():
 # Documentation: https://github.com/Asana/python-asana/blob/v5.0.11/docs/WebhooksApi.md#delete_webhook
 def delete_webhook(webhook_gid):
     try:
-        api_response = webhooks_api_instance.delete_webhook(webhook_gid)
+        webhooks_api_instance.delete_webhook(webhook_gid)
         print(f'Webhook {webhook_gid} deleted due to mismatch.')
     except ApiException as e:
         print(f"Exception when calling WebhooksApi->delete_webhook: {e}\n")
