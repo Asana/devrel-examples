@@ -1,7 +1,7 @@
 {
   "name": "triage-bot",
   "version": "1.0.0",
-  "description": "A friendly Asana bot to triage design requests",
+  "description": "A friendly Asana bot to triage requests",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "asana": "0.17.1",
-    "node": "12.7.0"
+    "asana": "1.0.5",
+    "node": "22.11.0"
   }
 }
