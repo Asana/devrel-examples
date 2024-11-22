@@ -1,0 +1,48 @@
+h1 {
+  font-size: 28px;
+  line-height: 30px;
+  margin: 30px auto 18px auto;
+}
+
+a,
+a:hover,
+a:visited,
+a:active {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #ef6a6a;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  background-color: #ffffff;
+  width: 300px;
+  height: 260px;
+  border-radius: 10px;
+}
+
+.button {
+  display: block;
+  font-size: 14px;
+  width: 100%;
+  color: #ffffff;
+  background-color: #4573d1;
+  padding: 10px 18px 10px 18px;
+  margin-bottom: 30px;
+  border-radius: 10px;
+}
+
+#authorized-body {
+  display: none;
+}
