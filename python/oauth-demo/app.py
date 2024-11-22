@@ -10,7 +10,9 @@ from asana.rest import ApiException
 load_dotenv()
 
 app = Flask(__name__)
-# Set a secret key to securely sign session cookies and protect session data integrity
+# Secret Key: os.urandom(24) generates a random secret key each time the server starts.
+# For sessions to persist across server restarts and work in a distributed environment, 
+# set a consistent secret key (e.g., through environment variables) rather than using a random key.
 app.secret_key = os.urandom(24)
 
 # Serve the main HTML page (index.html) from the 'static' directory.
