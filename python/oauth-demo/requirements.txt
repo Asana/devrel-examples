@@ -92,7 +92,6 @@ et-xmlfile==1.1.0
 exceptiongroup==1.2.2
 executing==2.1.0
 fakeredis==1.10.2
-fieldanalysis @ file:///Users/andrewwong/Desktop/custom-field-analysis/dist/fieldanalysis-0.1.0.tar.gz
 filelock==3.16.1
 filetype==1.2.0
 Flask==3.0.3

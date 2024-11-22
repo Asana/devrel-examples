@@ -31,7 +31,7 @@ pip install -r requirements.txt
 
 _Note: In order for a user to be able to authorize via the [user authorization endpoint](https://developers.asana.com/docs/oauth#user-authorization-endpoint), the application must be available in the user's workspace. See the [manage distribution](https://developers.asana.com/docs/manage-distribution) documentation for details._ 
 
-2. Create a `./.env` file (in the root directory of the project) with the required configurations:
+2. Create a `.env` file (in the root directory of the project) with the required configurations:
 
 ```
 CLIENT_ID=your_client_id_here
