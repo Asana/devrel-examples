@@ -114,7 +114,7 @@ function exportToCsv(headers, projects) {
 
   // Map each project as a new row
   let projectsCsvData = projects
-    .map((project) => headers.map((key) => project[key] || "").join(","))
+    .map((project) => headers.map((key) => project[key] ?? "").join(","))
     .join("\n");
 
   // Join the content to the headers
