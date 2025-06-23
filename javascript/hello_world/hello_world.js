@@ -1,14 +1,27 @@
-var asana = require('asana');
+const Asana = require('asana');
 
-// replace with your personal access token.
-var personalAccessToken = '0/123456789....';
+// Set up the API client and authenticate with a personal access token
+let client = Asana.ApiClient.instance;
+let token = client.authentications['token'];
+token.accessToken = '<PERSONAL_ACCESS_TOKEN'; // Replace with your PAT
 
-// construct an Asana client
-var client = asana.Client.create().useAccessToken(personalAccessToken);
+// Create an instance of the Users API
+let usersApi = new Asana.UsersApi();
 
-// Get your user info
-client.users.me()
-  .then(function(me) {
-    // Print out your information
-    console.log('Hello world! ' + 'My name is ' + me.name + '.');
-});
+// Define user identifier
+let user_gid = 'me';
+
+// Define optiona
+let opts = {
+  opt_fields: 'name'
+};
+
+// Call the API to get user info
+usersApi.getUser(user_gid, opts).then(
+  (result) => {
+    console.log(`Hello world! My name is ${result.data.name}.`);
+  },
+  (error) => {
+    console.error('Error fetching user:', error.response?.body || error);
+  }
+);
