@@ -1,6 +1,6 @@
 # Asana API Hello World (Node.js)
 
-This is a quick "Hello World" example that demonstrates how to authenticate with the Asana API using a personal access token (PAT) and retrieve your user information.
+This is a quick "Hello World" example that demonstrates how to authenticate with the Asana API using a personal access token (PAT) and retrieve your user information. This script uses v3 of the official [Asana Node.js library](https://github.com/Asana/node-asana).
 
 ## Prerequisites
 
