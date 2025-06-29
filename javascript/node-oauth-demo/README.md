@@ -8,7 +8,7 @@ Documentation: Asana's [OAuth](https://developers.asana.com/docs/oauth)
 
 ## Requirements
 
-The application was built with Node v19.4.0.
+The application was built with Node v23.3.0.
 
 Visit [Node.js](https://nodejs.org/en/download/) get the latest version for your local machine.
 
@@ -59,7 +59,7 @@ You may also wish to view helpful outputs and notes in your terminal as well.
 
 Your access token (with an expiration of one hour) will also be loaded into the URL as a query parameter. With the access token, you can:
 
-* Select "Fetch your user info!" to have the application make a request to [GET /users/me](https://developers.asana.com/reference/getuser) on your behalf (and output the response as JSON in the browser)
+* Select "Fetch your user info" to have the application make a request to [GET /users/me](https://developers.asana.com/reference/getuser) on your behalf (and output the response as JSON in the browser)
 * Use the access token to make an API request yourself (e.g., via the [API Explorer](https://developers.asana.com/docs/api-explorer), [Postman Collection](https://developers.asana.com/docs/postman-collection), etc.)
 
 ## Deauthorizing the demo app
