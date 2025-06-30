@@ -20,13 +20,18 @@ const axios = require("axios");
 const path = require("path");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const { v4: uuidv4 } = require("uuid");
+const crypto = require("crypto");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Enable CORS for local frontend
-app.use(cors({ origin: "http://localhost:3000" }));
+// Enable CORS with secure configuration
+app.use(cors({ 
+  origin: process.env.ALLOWED_ORIGINS || "http://localhost:3000", 
+  methods: ["GET", "POST"],
+  credentials: true,
+  optionsSuccessStatus: 204
+}));
 
 // Parse cookies, including signed cookies (used to validate state during OAuth flow)
 app.use(cookieParser(process.env.COOKIE_SECRET));
@@ -47,7 +52,7 @@ app.get("/", (req, res) => {
  * Docs: https://developers.asana.com/docs/oauth#user-authorization-endpoint
  */
 app.get("/authenticate", (req, res) => {
-  const state = uuidv4();
+  const state = crypto.randomUUID();
 
   // Store state in a signed cookie to protect against CSRF.
   res.cookie("state", state, {
@@ -56,7 +61,9 @@ app.get("/authenticate", (req, res) => {
     sameSite: "lax",
   });
 
-  const authUrl = `https://app.asana.com/-/oauth_authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&state=${state}`;
+  // Hard-coded redirect URI for demo simplicity
+  const redirectUri = "http://localhost:3000/oauth-callback";
+  const authUrl = `https://app.asana.com/-/oauth_authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${redirectUri}&state=${state}`;
   res.redirect(authUrl);
 });
 
@@ -83,7 +90,7 @@ app.get("/oauth-callback", async (req, res) => {
         grant_type: "authorization_code",
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
-        redirect_uri: process.env.REDIRECT_URI,
+        redirect_uri: "http://localhost:3000/oauth-callback",
         code,
       }),
       {
@@ -93,17 +100,25 @@ app.get("/oauth-callback", async (req, res) => {
 
     const { access_token, refresh_token } = response.data;
 
-    // Store tokens in cookies (local-only, not secure or httpOnly)
+    // Store tokens in cookies with httpOnly and secure flags for security
     res.cookie("access_token", access_token, {
       maxAge: 60 * 60 * 1000, // 1 hour
       sameSite: "lax",
+      httpOnly: true,
+      secure: true,
     });
 
     res.cookie("refresh_token", refresh_token, {
       sameSite: "lax",
+      httpOnly: true,
+      secure: true,
     });
 
-    // Redirect to home page with access token in URL for debugging
+    // WARNING: Including tokens in URLs is insecure (browser history, logs)
+    // For production:
+    // 1. Remove token from URL
+    // 2. Use server-side sessions instead
+    // 3. Make API calls only from server-side code using httpOnly cookies
     res.redirect(`/?access_token=${access_token}`);
   } catch (err) {
     console.error("Token exchange failed:", err.response?.data || err.message);

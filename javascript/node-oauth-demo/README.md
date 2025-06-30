@@ -31,11 +31,13 @@ _Note: In order for a user to be able to authorize via the [user authorization e
 ```
 CLIENT_ID=your_client_id_here
 CLIENT_SECRET=your_client_secret_here
-REDIRECT_URI=your_redirect_uri_here
 COOKIE_SECRET=can_be_any_value
+ALLOWED_ORIGINS=http://localhost:3000
 ```
 
 You can view an example in the included `./.env-example` file. Note that you should _never_ commit or otherwise expose your `./.env` file publicly.
+
+Note: The redirect URI is now hardcoded to `http://localhost:3000/oauth-callback` for simplicity.
 
 3. Start the server:
 
@@ -57,7 +59,7 @@ You may also wish to view helpful outputs and notes in your terminal as well.
 
 ![user auth screen](./images/authedscreen.png)
 
-Your access token (with an expiration of one hour) will also be loaded into the URL as a query parameter. With the access token, you can:
+Your access token (with an expiration of one hour) will be securely stored in an `httpOnly` cookie and also loaded into the URL as a query parameter (for demonstration purposes only - this practice is not recommended for production). With the access token, you can:
 
 * Select "Fetch your user info" to have the application make a request to [GET /users/me](https://developers.asana.com/reference/getuser) on your behalf (and output the response as JSON in the browser)
 * Use the access token to make an API request yourself (e.g., via the [API Explorer](https://developers.asana.com/docs/api-explorer), [Postman Collection](https://developers.asana.com/docs/postman-collection), etc.)
