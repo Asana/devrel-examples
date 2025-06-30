@@ -27,9 +27,11 @@ body {
   align-items: center;
   text-align: center;
   background-color: #ffffff;
-  width: 300px;
+  width: 400px;
   height: 260px;
   border-radius: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .button {
