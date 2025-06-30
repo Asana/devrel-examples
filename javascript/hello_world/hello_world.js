@@ -11,7 +11,7 @@ let usersApi = new Asana.UsersApi();
 // Define user identifier
 let user_gid = 'me';
 
-// Define optiona
+// Define options
 let opts = {
   opt_fields: 'name'
 };
