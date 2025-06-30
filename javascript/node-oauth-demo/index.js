@@ -23,11 +23,11 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 4567; // Using a fixed uncommon port for simplicity
 
 // Enable CORS with secure configuration
 app.use(cors({ 
-  origin: process.env.ALLOWED_ORIGINS || "http://localhost:3000", 
+  origin: process.env.ALLOWED_ORIGINS || "http://localhost:4567", 
   methods: ["GET", "POST"],
   credentials: true,
   optionsSuccessStatus: 204
@@ -62,7 +62,7 @@ app.get("/authenticate", (req, res) => {
   });
 
   // Hard-coded redirect URI for demo simplicity
-  const redirectUri = "http://localhost:3000/oauth-callback";
+  const redirectUri = "http://localhost:4567/oauth-callback";
   const authUrl = `https://app.asana.com/-/oauth_authorize?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${redirectUri}&state=${state}`;
   res.redirect(authUrl);
 });
@@ -90,7 +90,7 @@ app.get("/oauth-callback", async (req, res) => {
         grant_type: "authorization_code",
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
-        redirect_uri: "http://localhost:3000/oauth-callback",
+        redirect_uri: "http://localhost:4567/oauth-callback",
         code,
       }),
       {
@@ -158,5 +158,5 @@ app.get("/get-me", async (req, res) => {
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:4567`);
 });
