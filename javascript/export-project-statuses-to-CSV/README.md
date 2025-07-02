@@ -10,7 +10,7 @@ The Portfolio Status Updates application is used to extract [status updates](htt
 
 ## Requirements
 
-Since the script largely makes use of out-of-the-box [DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model) methods in the browser, there are no system requirements for this script.
+Since the script largely makes use of out-of-the-box [DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model) methods in the browser, there are no system requirements for this script. For requests to API endpoints the official [node-asana](https://github.com/Asana/node-asana) library is used.
 
 Otherwise, ensure that you have the latest version of your preferred browser installed on your local machine.
 
