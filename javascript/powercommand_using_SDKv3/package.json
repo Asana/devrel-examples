@@ -1,0 +1,30 @@
+{
+  "name": "asana-powercommands",
+  "version": "1.0.0",
+  "description": "Command-line interface for power-user operations over the Asana API",
+  "main": "asana-power.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Asana/powercommands.git"
+  },
+  "keywords": [
+    "asana",
+    "cli",
+    "command-line"
+  ],
+  "author": "Kenan Kigunda",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Asana/powercommands/issues"
+  },
+  "homepage": "https://github.com/Asana/powercommands#readme",
+  "dependencies": {
+    "asana": "^3.0.1",
+    "keychain": "^1.3.0",
+    "yargs": "^14.2.3"
+  },
+  "bin": {
+    "asana-power": "./asana_power.js"
+  },
+  "preferGlobal": true
+}
