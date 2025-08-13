@@ -27,7 +27,7 @@
     <dependency>
       <groupId>com.asana</groupId>
       <artifactId>asana</artifactId>
-      <version>0.9.0</version>
+      <version>0.10.4</version>
     </dependency>
     <dependency>
       <groupId>com.hubspot.slack</groupId>
